@@ -13,8 +13,8 @@ extern TIMER_Handle Timer_Handler;
 
 extern unsigned int CodecEventId, TimerEventId, SPIEventId;
 
-void MCBSP_Codec_init(void);
-void MCBSP_SPI_init(void);
+void Codec_init(void);
+void SD_init(void);
 void Timer_init(void);
 void Interrup_init(void);
 

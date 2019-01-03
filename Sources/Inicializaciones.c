@@ -23,10 +23,14 @@ TIMER_Handle Timer_Handler; //Handler para el Timer
 Uint32 CodecEventId, TimerEventId, SPIEventId; //ID de eventos para las interrupciones
 
 void MCBSP_Codec_init(void){
+	DSK6713_rset(DSK6713_MISC, 0); //Modifico registro de CPLD para mandar el MCBSP al Codec
+
 	hAIC23_handle = DSK6713_AIC23_openCodec(0, &Codec_Config); //Crea puntero al Codec
+
 	DSK6713_AIC23_setFreq(hAIC23_handle, DSK6713_AIC23_FREQ_44KHZ);  //Setea frecuencia de muestreo
 	DSK6713_AIC23_rset(hAIC23_handle, 0x0004, DSK6713_AIC23_INPUT_LINE); //Selecciona Line-in como entrada al Codec
 	MCBSP_config(DSK6713_AIC23_DATAHANDLE,&MCBSP1_to_Codec_Config); //Configura el canal de datos al Codec
+
 	MCBSP_start(DSK6713_AIC23_DATAHANDLE, MCBSP_XMIT_START | MCBSP_RCV_START |
 		MCBSP_SRGR_START | MCBSP_SRGR_FRAMESYNC, 220); //Habilita la transmision de datos
 }
@@ -61,7 +65,7 @@ void Timer_init(void){
 }
 
 void Interrup_init(void){
-	//CodecEventId = MCBSP_getXmtEventId(DSK6713_AIC23_codecdatahandle); //McBSP1 Xmit
+	CodecEventId = MCBSP_getXmtEventId(DSK6713_AIC23_codecdatahandle); //McBSP1 Xmit
 	TimerEventId = TIMER_getEventId(Timer_Handler); //Timer
 
 	IRQ_map(CodecEventId, 11); //Mapea el McBSP1 Xmit a INT11
