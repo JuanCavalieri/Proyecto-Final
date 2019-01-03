@@ -1,7 +1,7 @@
 #include "DSK6713_AIC23.h"	//codec-DSK support file
 #include "Funciones.h"
 #include "Inicializaciones.h"
-#include "ff.h"
+
 
 volatile unsigned int cuentas = 0;
 int j = 0;
@@ -12,7 +12,6 @@ void main(){
 	IRQ_globalDisable(); //Deshabilita todas las interrupciones
 	DSK6713_init(); //Inicializa DSK-EMIF,PLL
 	Timer_init(); //Inicializa el Timer
-	MCBSP_SPI_init(); //Inicializa el MCBSP como SPI
 	Interrup_init(); //Inicializa las interrupciones de
 
 
