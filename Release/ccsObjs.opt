@@ -1,0 +1,1 @@
+"./Sources/sdmm.obj" "./Sources/main.obj" "./Sources/ff.obj" "./Sources/dsk6713_led.obj" "./Sources/dsk6713_dip.obj" "./Sources/dsk6713_aic23_setfreq.obj" "./Sources/dsk6713_aic23_registers.obj" "./Sources/dsk6713_aic23_opencodec.obj" "./Sources/dsk6713.obj" "./Sources/Inicializaciones.obj" "./Sources/Funciones.obj" "./Vectors_intr.obj" -l"libc.a" 
