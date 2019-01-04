@@ -10,7 +10,7 @@
 
 
 void Load_sweep(Complex* sweep);
-void Save_sweep(Complex* sweep);
-void Save_RI(Complex* left_ch, Complex* right_ch);
+void Save_sweep(Complex* sweep, int size);
+void Save_RI(Complex* left_ch, Complex* right_ch, int size);
 
 #endif /* SD_H_ */
