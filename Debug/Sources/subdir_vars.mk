@@ -6,6 +6,7 @@
 C_SRCS += \
 ../Sources/Codec.c \
 ../Sources/Inicializaciones.c \
+../Sources/Resp_impulso.c \
 ../Sources/SD.c \
 ../Sources/dsk6713.c \
 ../Sources/dsk6713_aic23_opencodec.c \
@@ -20,6 +21,7 @@ C_SRCS += \
 OBJS += \
 ./Sources/Codec.obj \
 ./Sources/Inicializaciones.obj \
+./Sources/Resp_impulso.obj \
 ./Sources/SD.obj \
 ./Sources/dsk6713.obj \
 ./Sources/dsk6713_aic23_opencodec.obj \
@@ -34,6 +36,7 @@ OBJS += \
 C_DEPS += \
 ./Sources/Codec.pp \
 ./Sources/Inicializaciones.pp \
+./Sources/Resp_impulso.pp \
 ./Sources/SD.pp \
 ./Sources/dsk6713.pp \
 ./Sources/dsk6713_aic23_opencodec.pp \
@@ -48,6 +51,7 @@ C_DEPS += \
 C_DEPS__QUOTED += \
 "Sources\Codec.pp" \
 "Sources\Inicializaciones.pp" \
+"Sources\Resp_impulso.pp" \
 "Sources\SD.pp" \
 "Sources\dsk6713.pp" \
 "Sources\dsk6713_aic23_opencodec.pp" \
@@ -62,6 +66,7 @@ C_DEPS__QUOTED += \
 OBJS__QUOTED += \
 "Sources\Codec.obj" \
 "Sources\Inicializaciones.obj" \
+"Sources\Resp_impulso.obj" \
 "Sources\SD.obj" \
 "Sources\dsk6713.obj" \
 "Sources\dsk6713_aic23_opencodec.obj" \
@@ -76,6 +81,7 @@ OBJS__QUOTED += \
 C_SRCS__QUOTED += \
 "../Sources/Codec.c" \
 "../Sources/Inicializaciones.c" \
+"../Sources/Resp_impulso.c" \
 "../Sources/SD.c" \
 "../Sources/dsk6713.c" \
 "../Sources/dsk6713_aic23_opencodec.c" \

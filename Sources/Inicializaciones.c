@@ -14,10 +14,8 @@
 #include "Inicializaciones.h"
 
 DSK6713_AIC23_CodecHandle hAIC23_handle; //Handler para el Codec
-
 MCBSP_Handle SPI_Handler; //Handler para la configuracion del MCBSP0 como SPI
 MCBSP_Handle GPIO_Handler; //Handler para la configuracion del MCBSP1 como GPIO
-
 TIMER_Handle Timer_Handler; //Handler para el Timer
 
 Uint32 CodecEventId, TimerEventId, SPIEventId; //ID de eventos para las interrupciones

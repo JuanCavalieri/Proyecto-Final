@@ -8,7 +8,7 @@
 #include "Codec.h"
 #include "DSK6713_AIC23.h"
 
-#define ARRANCAR_CODEC	Output_data(0);
+#define ARRANCAR_CODEC	Codec_out(0);
 extern Uint32 CodecEventId;
 
 //---------------- Union para los datos del Codec ----------------

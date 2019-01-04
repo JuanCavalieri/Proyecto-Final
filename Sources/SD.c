@@ -6,7 +6,7 @@
  */
 
 #include "ff.h"
-
+#include "SD.h"
 //------------ Union para el encabezado del archivo .WAV -----------------------------
 
 union{
@@ -105,7 +105,6 @@ void Save_RI(Complex* left_ch, Complex* right_ch, int size){
 	FIL Fil;
 	UINT bytes;
 	unsigned int i, cant_samples;
-	int sample = 0;
 
 	WavHeader.WAVFile.ChunkID = 0x46464952;
 	WavHeader.WAVFile.ChunkSize = 36 + size;

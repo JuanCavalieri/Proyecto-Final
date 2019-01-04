@@ -8,6 +8,7 @@
 #ifndef SD_H_
 #define SD_H_
 
+#include "Resp_impulso.h"
 
 void Load_sweep(Complex* sweep);
 void Save_sweep(Complex* sweep, int size);

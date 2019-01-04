@@ -1,7 +1,9 @@
-#include "DSK6713_AIC23.h"	//codec-DSK support file
+#include "DSK6713_AIC23.h"
+#include "dsk6713_dip.h"
 #include "Inicializaciones.h"
 #include "SD.h"
 #include "Codec.h"
+//#include "Resp_impulso.h"
 
 //-------------- Vectores de señales ----------------
 
@@ -9,7 +11,7 @@
 #pragma DATA_SECTION(left_ch, ".EXT_RAM")
 #pragma DATA_SECTION(right_ch, ".EXT_RAM")
 
-Complex sweep[N], left_ch[N], right_ch[N];
+Complex sweep[MUESTRAS], left_ch[MUESTRAS], right_ch[MUESTRAS];
 
 //-------------- Variables auxiliares ---------------
 
@@ -28,13 +30,17 @@ void main(){
 
 	IRQ_globalDisable();
 	DSK6713_init();
+	DSK6713_DIP_init();
+	DSK6713_LED_init();
 	Timer_init();
 	Interrup_init();
+
+	Vectores_reset(MUESTRAS);
 
 	//-------------- Cargar Sweep desde la SD -----------
 
 	SD_init();
-	//Cargar_sweep();
+	Load_sweep(sweep);
 
 	//-------------- Bucle infinito ------------------------
 

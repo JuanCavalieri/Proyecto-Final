@@ -16,8 +16,10 @@ Sources/main.obj: C:/C6xCSL/include/csl_timer.h
 Sources/main.obj: C:/C6xCSL/include/csl_timerhal.h
 Sources/main.obj: C:/C6xCSL/include/csl_mcbsp.h
 Sources/main.obj: C:/C6xCSL/include/csl_mcbsphal.h
+Sources/main.obj: C:/DSK6713/c6000/dsk6713/include/dsk6713_dip.h
 Sources/main.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/Inicializaciones.h
 Sources/main.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/SD.h
+Sources/main.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/Resp_impulso.h
 Sources/main.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/Codec.h
 
 ../Sources/main.c: 
@@ -36,6 +38,8 @@ C:/C6xCSL/include/csl_timer.h:
 C:/C6xCSL/include/csl_timerhal.h: 
 C:/C6xCSL/include/csl_mcbsp.h: 
 C:/C6xCSL/include/csl_mcbsphal.h: 
+C:/DSK6713/c6000/dsk6713/include/dsk6713_dip.h: 
 E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/Inicializaciones.h: 
 E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/SD.h: 
+E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/Resp_impulso.h: 
 E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/Codec.h: 
