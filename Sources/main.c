@@ -1,6 +1,7 @@
 #include "DSK6713_AIC23.h"	//codec-DSK support file
-#include "Funciones.h"
 #include "Inicializaciones.h"
+#include "SD.h"
+#include "Codec.h"
 
 //-------------- Vectores de señales ----------------
 
@@ -16,10 +17,10 @@ volatile unsigned int cuentas = 0;
 int j = 0;
 int puls_levantados = 1;
 
-//-------------- Cargar Sweep desde la SD -----------
-
-SD_init();
-//Cargar_sweep();
+extern union{
+	Uint32 sample;
+	short channel[2];
+} Codec_data;
 
 void main(){
 
@@ -29,6 +30,11 @@ void main(){
 	DSK6713_init();
 	Timer_init();
 	Interrup_init();
+
+	//-------------- Cargar Sweep desde la SD -----------
+
+	SD_init();
+	//Cargar_sweep();
 
 	//-------------- Bucle infinito ------------------------
 
@@ -75,13 +81,12 @@ void main(){
 	}
 }
 
-interrupt void c_int11(){         //interrupt service routine
-    Output_data(sweep_signal[j]);
-    if(j == 240000){
-    	j = 0;
-    }else{
-    	j++;
-    }
+interrupt void c_int11(){
+
+   Codec_out((short)sweep[j].real);
+   Codec_data.sample = Codec_in();
+   left_ch[j].real = (float)Codec_data.channel[LEFT];
+   right_ch[j].real = (float)Codec_data.channel[RIGHT];
 }
 
 interrupt void c_int10(){ //Interrumpe cada 1 micro segundo

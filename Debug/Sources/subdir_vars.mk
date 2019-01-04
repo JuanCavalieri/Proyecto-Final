@@ -4,8 +4,9 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../Sources/Funciones.c \
+../Sources/Codec.c \
 ../Sources/Inicializaciones.c \
+../Sources/SD.c \
 ../Sources/dsk6713.c \
 ../Sources/dsk6713_aic23_opencodec.c \
 ../Sources/dsk6713_aic23_registers.c \
@@ -17,8 +18,9 @@ C_SRCS += \
 ../Sources/sdmm.c 
 
 OBJS += \
-./Sources/Funciones.obj \
+./Sources/Codec.obj \
 ./Sources/Inicializaciones.obj \
+./Sources/SD.obj \
 ./Sources/dsk6713.obj \
 ./Sources/dsk6713_aic23_opencodec.obj \
 ./Sources/dsk6713_aic23_registers.obj \
@@ -30,8 +32,9 @@ OBJS += \
 ./Sources/sdmm.obj 
 
 C_DEPS += \
-./Sources/Funciones.pp \
+./Sources/Codec.pp \
 ./Sources/Inicializaciones.pp \
+./Sources/SD.pp \
 ./Sources/dsk6713.pp \
 ./Sources/dsk6713_aic23_opencodec.pp \
 ./Sources/dsk6713_aic23_registers.pp \
@@ -43,8 +46,9 @@ C_DEPS += \
 ./Sources/sdmm.pp 
 
 C_DEPS__QUOTED += \
-"Sources\Funciones.pp" \
+"Sources\Codec.pp" \
 "Sources\Inicializaciones.pp" \
+"Sources\SD.pp" \
 "Sources\dsk6713.pp" \
 "Sources\dsk6713_aic23_opencodec.pp" \
 "Sources\dsk6713_aic23_registers.pp" \
@@ -56,8 +60,9 @@ C_DEPS__QUOTED += \
 "Sources\sdmm.pp" 
 
 OBJS__QUOTED += \
-"Sources\Funciones.obj" \
+"Sources\Codec.obj" \
 "Sources\Inicializaciones.obj" \
+"Sources\SD.obj" \
 "Sources\dsk6713.obj" \
 "Sources\dsk6713_aic23_opencodec.obj" \
 "Sources\dsk6713_aic23_registers.obj" \
@@ -69,8 +74,9 @@ OBJS__QUOTED += \
 "Sources\sdmm.obj" 
 
 C_SRCS__QUOTED += \
-"../Sources/Funciones.c" \
+"../Sources/Codec.c" \
 "../Sources/Inicializaciones.c" \
+"../Sources/SD.c" \
 "../Sources/dsk6713.c" \
 "../Sources/dsk6713_aic23_opencodec.c" \
 "../Sources/dsk6713_aic23_registers.c" \

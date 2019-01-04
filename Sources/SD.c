@@ -58,8 +58,6 @@ void Load_sweep(Complex* sweep){
 	}
 
 	f_close(&Fil);
-	MCBSP_FSET(PCR1, CLKXP, 0);
-	MCBSP_FSET(PCR1, CLKXP, 1);
 }
 
 void Save_sweep(Complex* sweep, int size){
@@ -68,6 +66,7 @@ void Save_sweep(Complex* sweep, int size){
 	FIL Fil;
 	UINT bytes;
 	unsigned int i, cant_samples;
+	int sample = 0;
 
 	WavHeader.WAVFile.ChunkID = 0x46464952;
 	WavHeader.WAVFile.ChunkSize = 36 + size/2;
@@ -98,8 +97,6 @@ void Save_sweep(Complex* sweep, int size){
 	}
 
 	f_close(&Fil);
-	MCBSP_FSET(PCR1, CLKXP, 0);
-	MCBSP_FSET(PCR1, CLKXP, 1);
 }
 
 void Save_RI(Complex* left_ch, Complex* right_ch, int size){
@@ -107,7 +104,7 @@ void Save_RI(Complex* left_ch, Complex* right_ch, int size){
 	FATFS FatFs;
 	FIL Fil;
 	UINT bytes;
-	unsigned int i, size, cant_samples;
+	unsigned int i, cant_samples;
 	int sample = 0;
 
 	WavHeader.WAVFile.ChunkID = 0x46464952;
@@ -134,12 +131,10 @@ void Save_RI(Complex* left_ch, Complex* right_ch, int size){
 
 	for(i = 0; i < cant_samples; i++){
 
-		Sample.channels.left = (int)lefh_ch[i].real;
+		Sample.channels.left = (int)left_ch[i].real;
 		Sample.channels.right = (int)right_ch[i].real;
 		f_write(&Fil, &Sample.data, 8, &bytes);
 	}
 
 	f_close(&Fil);
-	MCBSP_FSET(PCR1, CLKXP, 0);
-	MCBSP_FSET(PCR1, CLKXP, 1);
 }
