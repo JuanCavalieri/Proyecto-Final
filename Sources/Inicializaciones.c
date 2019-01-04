@@ -22,7 +22,7 @@ TIMER_Handle Timer_Handler; //Handler para el Timer
 
 Uint32 CodecEventId, TimerEventId, SPIEventId; //ID de eventos para las interrupciones
 
-void MCBSP_Codec_init(void){
+void Codec_init(void){
 	DSK6713_rset(DSK6713_MISC, 0); //Modifico registro de CPLD para mandar el MCBSP al Codec
 
 	hAIC23_handle = DSK6713_AIC23_openCodec(0, &Codec_Config); //Crea puntero al Codec
@@ -35,7 +35,7 @@ void MCBSP_Codec_init(void){
 		MCBSP_SRGR_START | MCBSP_SRGR_FRAMESYNC, 220); //Habilita la transmision de datos
 }
 
-void MCBSP_SPI_init(void){
+void SD_init(void){
 	DSK6713_rset(DSK6713_MISC, 3); //Modifico registro de CPLD para sacar el MCBSP por los perifericos
 
 	SPI_Handler = MCBSP_open(MCBSP_DEV0, MCBSP_OPEN_RESET); //Abro el MCBSP0 para configurarlo como SPI
