@@ -17,8 +17,8 @@ Complex twiddles[MUESTRAS/2];
 //-------------- Variables auxiliares ---------------
 
 volatile unsigned int cuentas = 0;
-int j = 0;
 int puls_levantados = 1;
+int j = 0;
 
 extern union{
 	Uint32 sample;
@@ -37,6 +37,7 @@ void main(){
 	Interrup_init();
 
 	Vectores_reset(sweep, left_ch, right_ch, MUESTRAS);
+	Twiddle_init(twiddles, MUESTRAS);
 
 	//-------------- Cargar Sweep desde la SD -----------
 
