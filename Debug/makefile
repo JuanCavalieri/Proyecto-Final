@@ -132,7 +132,7 @@ all: Proyecto_DSK.out
 Proyecto_DSK.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: C6000 Linker'
-	"C:/ti/ccsv5/tools/compiler/c6000_7.4.4/bin/cl6x" -mv6700 --abi=coffabi -O3 -g --define=CHIP_6713 --display_error_number --diag_warning=225 --diag_wrap=off --mem_model:data=far -z -m"Proyecto_DSK.map" -i"C:/ti/ccsv5/tools/compiler/c6000_7.4.4/lib" -i"C:/DSK6713/c6000/bios/lib" -i"C:/DSK6713/c6000/dsk6713/lib" -i"C:/ti/ccsv5/tools/compiler/c6000_7.4.4/include" --reread_libs --warn_sections --display_error_number --diag_wrap=off --xml_link_info="Proyecto_DSK_linkInfo.xml" --rom_model -o "Proyecto_DSK.out" $(ORDERED_OBJS)
+	"C:/ti/ccsv5/tools/compiler/c6000_7.4.4/bin/cl6x" -mv6700 --abi=coffabi -O3 -ms3 -g --define=CHIP_6713 --display_error_number --diag_warning=225 --diag_wrap=off --mem_model:data=far -z -m"Proyecto_DSK.map" -i"C:/ti/ccsv5/tools/compiler/c6000_7.4.4/lib" -i"C:/DSK6713/c6000/bios/lib" -i"C:/DSK6713/c6000/dsk6713/lib" -i"C:/ti/ccsv5/tools/compiler/c6000_7.4.4/include" --reread_libs --warn_sections --display_error_number --diag_wrap=off --xml_link_info="Proyecto_DSK_linkInfo.xml" --rom_model -o "Proyecto_DSK.out" $(ORDERED_OBJS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 

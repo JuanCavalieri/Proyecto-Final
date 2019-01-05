@@ -17,8 +17,10 @@ $(GEN_CMDS__FLAG) \
 "./Sources/dsk6713_aic23_registers.obj" \
 "./Sources/dsk6713_aic23_opencodec.obj" \
 "./Sources/dsk6713.obj" \
+"./Sources/SD.obj" \
+"./Sources/Resp_impulso.obj" \
 "./Sources/Inicializaciones.obj" \
-"./Sources/Funciones.obj" \
+"./Sources/Codec.obj" \
 "./Vectors_intr.obj" \
 -l"libc.a" \
 
@@ -134,8 +136,8 @@ Proyecto_DSK.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 # Other Targets
 clean:
 	-$(RM) $(C6000_EXECUTABLE_OUTPUTS__QUOTED) "Proyecto_DSK.out"
-	-$(RM) "Sources\Funciones.pp" "Sources\Inicializaciones.pp" "Sources\dsk6713.pp" "Sources\dsk6713_aic23_opencodec.pp" "Sources\dsk6713_aic23_registers.pp" "Sources\dsk6713_aic23_setfreq.pp" "Sources\dsk6713_dip.pp" "Sources\dsk6713_led.pp" "Sources\ff.pp" "Sources\main.pp" "Sources\sdmm.pp" 
-	-$(RM) "Vectors_intr.obj" "Sources\Funciones.obj" "Sources\Inicializaciones.obj" "Sources\dsk6713.obj" "Sources\dsk6713_aic23_opencodec.obj" "Sources\dsk6713_aic23_registers.obj" "Sources\dsk6713_aic23_setfreq.obj" "Sources\dsk6713_dip.obj" "Sources\dsk6713_led.obj" "Sources\ff.obj" "Sources\main.obj" "Sources\sdmm.obj" 
+	-$(RM) "Sources\Codec.pp" "Sources\Inicializaciones.pp" "Sources\Resp_impulso.pp" "Sources\SD.pp" "Sources\dsk6713.pp" "Sources\dsk6713_aic23_opencodec.pp" "Sources\dsk6713_aic23_registers.pp" "Sources\dsk6713_aic23_setfreq.pp" "Sources\dsk6713_dip.pp" "Sources\dsk6713_led.pp" "Sources\ff.pp" "Sources\main.pp" "Sources\sdmm.pp" 
+	-$(RM) "Vectors_intr.obj" "Sources\Codec.obj" "Sources\Inicializaciones.obj" "Sources\Resp_impulso.obj" "Sources\SD.obj" "Sources\dsk6713.obj" "Sources\dsk6713_aic23_opencodec.obj" "Sources\dsk6713_aic23_registers.obj" "Sources\dsk6713_aic23_setfreq.obj" "Sources\dsk6713_dip.obj" "Sources\dsk6713_led.obj" "Sources\ff.obj" "Sources\main.obj" "Sources\sdmm.obj" 
 	-$(RM) "Vectors_intr.pp" 
 	-@echo 'Finished clean'
 	-@echo ' '

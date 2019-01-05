@@ -15,7 +15,7 @@
 #define OFF 0 //la reproduccion en el codec
 
 void Codec_out(short sample);
-Uint32 Codec_in(void);
-void Play_codec(Uint8 estado);
+unsigned int Codec_in(void);
+void Play_codec(unsigned char estado);
 
 #endif /* CODEC_H_ */

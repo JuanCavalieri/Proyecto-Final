@@ -26,12 +26,12 @@ void Codec_out(short sample){
 	MCBSP_write(DSK6713_AIC23_DATAHANDLE, Codec_data.sample);
 }
 
-Uint32 Codec_in(void){
+unsigned int Codec_in(void){
 
 	return MCBSP_read(DSK6713_AIC23_DATAHANDLE);
 }
 
-void Play_codec(Uint8 estado){
+void Play_codec(unsigned char estado){
 	if(estado == 1){
 		IRQ_enable(CodecEventId);
 		ARRANCAR_CODEC;

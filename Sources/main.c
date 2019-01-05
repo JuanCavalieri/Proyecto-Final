@@ -3,15 +3,16 @@
 #include "Inicializaciones.h"
 #include "SD.h"
 #include "Codec.h"
-//#include "Resp_impulso.h"
 
 //-------------- Vectores de señales ----------------
 
 #pragma DATA_SECTION(sweep, ".EXT_RAM")
 #pragma DATA_SECTION(left_ch, ".EXT_RAM")
 #pragma DATA_SECTION(right_ch, ".EXT_RAM")
+#pragma DATA_SECTION(twiddles, ".EXT_RAM")
 
 Complex sweep[MUESTRAS], left_ch[MUESTRAS], right_ch[MUESTRAS];
+Complex twiddles[MUESTRAS/2];
 
 //-------------- Variables auxiliares ---------------
 
@@ -35,7 +36,7 @@ void main(){
 	Timer_init();
 	Interrup_init();
 
-	Vectores_reset(MUESTRAS);
+	Vectores_reset(sweep, left_ch, right_ch, MUESTRAS);
 
 	//-------------- Cargar Sweep desde la SD -----------
 
