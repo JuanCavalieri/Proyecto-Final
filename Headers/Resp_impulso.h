@@ -23,8 +23,6 @@ void Bit_reversal(Complex *sweep, unsigned int lenght);
 static inline void swap(unsigned int forward, unsigned int rev, Complex *sweep);
 void fft(Complex *sweep, Complex *twiddles, int lenght);
 void ifft(Complex *sweep, Complex *twiddles, int lenght);
-void Bi2Po(Complex *vector, int lenght);
-void Po2Bi(Complex *vector, int lenght);
 void Obtener_RI(Complex *sweep, Complex *left_ch, Complex *right_ch, Complex *twiddles, int lenght);
 
 #endif /* RESP_IMPULSO_H_ */

@@ -172,55 +172,27 @@ void ifft(Complex *sweep, Complex *twiddles, int lenght){
     Normalize(sweep, lenght);
 }
 
-void Bi2Po(Complex *vector, int lenght){
-
-	int i;
-	float temp;
-
-	for(i = 0; i < lenght; i++){
-
-		temp = vector[i].real;
-		vector[i].real = (float)sqrt(vector[i].real * vector[i].real + vector[i].imag * vector[i].imag);
-		vector[i].imag = (float)atan(vector[i].imag / temp) * 180.0 / PI;
-	}
-}
-
-void Po2Bi(Complex *vector, int lenght){
-
-	int i;
-	float temp;
-
-	for(i = 0; i < lenght; i++){
-
-		temp = vector[i].real;
-		vector[i].real = (float)vector[i].real * cos(vector[i].imag * PI / 180.0);
-		vector[i].imag = (float)temp * sin(vector[i].imag * PI / 180.0);
-	}
-}
-
 void Obtener_RI(Complex *sweep, Complex *left_ch, Complex *right_ch, Complex *twiddles, int lenght){
 
 	int i;
+	float denominador, tempLeft, tempRight;
 
 	fft(sweep, twiddles, lenght);
 	fft(left_ch, twiddles, lenght);
 	fft(right_ch, twiddles, lenght);
 
-	Bi2Po(sweep, lenght);
-	Bi2Po(left_ch, lenght);
-	Bi2Po(right_ch, lenght);
-
 	for(i = 0; i < lenght; i++){
 
-		left_ch[i].real = left_ch[i].real / sweep[i].real;
-		right_ch[i].real = right_ch[i].real / sweep[i].real;
-		left_ch[i].imag = left_ch[i].imag - sweep[i].imag;
-		right_ch[i].imag = right_ch[i].imag - sweep[i].imag;
-	}
+		denominador = sweep[i].real * sweep[i].real + sweep[i].imag * sweep[i].imag;
+		tempLeft = left_ch[i].real;
+		tempRight = right_ch[i].real;
 
-	Po2Bi(sweep, lenght);
-	Po2Bi(left_ch, lenght);
-	Po2Bi(right_ch, lenght);
+		left_ch[i].real = (tempLeft * sweep[i].real + left_ch[i].imag * sweep[i].imag) / denominador;
+		left_ch[i].imag = (left_ch[i].imag * sweep[i].real - tempLeft * sweep[i].imag) / denominador;
+
+		right_ch[i].real = (tempRight * sweep[i].real + right_ch[i].imag * sweep[i].imag) / denominador;
+		right_ch[i].imag = (right_ch[i].imag * sweep[i].real - tempRight * sweep[i].imag) / denominador;
+	}
 
 	ifft(sweep, twiddles, lenght);
 	ifft(left_ch, twiddles, lenght);

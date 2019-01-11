@@ -71,7 +71,7 @@ void main(){
 		if(!DSK6713_DIP_get(2) && puls_levantados){
 			Codec_init();
 			//Play_codec();
-			//Obtener_RI();
+			Obtener_RI(sweep, left_ch, right_ch, twiddles, MUESTRAS);
 			puls_levantados = 0;
 		}
 
