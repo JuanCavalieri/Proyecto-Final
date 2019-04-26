@@ -16,18 +16,29 @@
 
 #define MUESTRAS_SWEEP FS*DURACION_SWEEP
 
-void Vectores_reset(Complex *sweep, Complex *left_ch, Complex *right_ch, int lenght){
+/* Se declaran en el main.c para evitar conflictos con
+ * la sentencia #pragma DATA_SECTION(). Sino estas variables deberian
+ * ser parte de la libreria creada para este proyecto
+ *
+Vector sweep, left_ch, right_ch;
+Vector *sweep_ptr = &sweep;
+Vector *left_ch_ptr = &left_ch;
+Vector *right_ch_ptr = &right_ch;
+Complex twiddles[MUESTRAS/2];
+*/
+
+void Vectores_reset(Vector *sweep, Vector *left_ch, Vector *right_ch, int lenght){
 
 	int i;
 
 	for(i = 0; i < lenght; i++){
 
-		sweep[i].real = 0;
-		sweep[i].imag = 0;
-		left_ch[i].real = 0;
-		left_ch[i].imag = 0;
-		right_ch[i].real = 0;
-		right_ch[i].imag = 0;
+		sweep->samples[i].real = 0;
+		sweep->samples[i].imag = 0;
+		left_ch->samples[i].real = 0;
+		left_ch->samples[i].imag = 0;
+		right_ch->samples[i].real = 0;
+		right_ch->samples[i].imag = 0;
 	}
 }
 
@@ -44,7 +55,7 @@ void Twiddle_init(Complex *twiddles, int lenght){
 	}
 }
 
-void Normalize(Complex *signal, int lenght){
+void Normalize(Vector *signal, int lenght){
 
 	int i;
 	float norm;
@@ -53,12 +64,12 @@ void Normalize(Complex *signal, int lenght){
 
 	for(i = 0;i < lenght; i++){
 
-		signal[i].real *= norm;
-		signal[i].imag *= norm;
+		signal->samples[i].real *= norm;
+		signal->samples[i].imag *= norm;
 	}
 }
 
-void Bit_reversal(Complex *signal, unsigned int lenght){
+void Bit_reversal(Vector *signal, unsigned int lenght){
 
     unsigned int i, forward, rev, zeros;
     unsigned int nodd, noddrev;        // to hold bitwise negated or odd values
@@ -97,20 +108,20 @@ void Bit_reversal(Complex *signal, unsigned int lenght){
     // end of the bitreverse permutation loop
 }
 
-static inline void swap(unsigned int forward, unsigned int rev, Complex *signal){
+static inline void swap(unsigned int forward, unsigned int rev, Vector *signal){
 
 	float temp;
 
-    temp = signal[forward].real;
-    signal[forward].real = signal[rev].real;
-    signal[rev].real = temp;
+    temp = signal->samples[forward].real;
+    signal->samples[forward].real = signal->samples[rev].real;
+    signal->samples[rev].real = temp;
 
-    temp = signal[forward].imag;
-    signal[forward].imag = signal[rev].imag;
-    signal[rev].imag = temp;
+    temp = signal->samples[forward].imag;
+    signal->samples[forward].imag = signal->samples[rev].imag;
+    signal->samples[rev].imag = temp;
 }
 
-void fft(Complex *signal, Complex *twiddles, int lenght){
+void fft(Vector *signal, Complex *twiddles, int lenght){
 
 	unsigned int even, odd, span, log, rootindex;    // indexes
 	float temp;
@@ -123,20 +134,20 @@ void fft(Complex *signal, Complex *twiddles, int lenght){
             odd |= span;                    // iterate over odd blocks only
             even = odd ^ span;              // even part of the dual node pair
 
-            temp = signal[even].real + signal[odd].real;
-            signal[odd].real = signal[even].real - signal[odd].real;
-            signal[even].real = temp;
+            temp = signal->samples[even].real + signal->samples[odd].real;
+            signal->samples[odd].real = signal->samples[even].real - signal->samples[odd].real;
+            signal->samples[even].real = temp;
 
-            temp = signal[even].imag + signal[odd].imag;
-            signal[odd].imag = signal[even].imag - signal[odd].imag;
-            signal[even].imag = temp;
+            temp = signal->samples[even].imag + signal->samples[odd].imag;
+            signal->samples[odd].imag = signal->samples[even].imag - signal->samples[odd].imag;
+            signal->samples[even].imag = temp;
 
             rootindex = (even<<log) & (lenght-1); // find root of unity index
             if(rootindex){                    // skip rootindex[0] (has an identity)
 
-                temp = twiddles[rootindex].real * signal[odd].real - twiddles[rootindex].imag * signal[odd].imag;
-                signal[odd].imag = twiddles[rootindex].real * signal[odd].imag + twiddles[rootindex].imag * signal[odd].real;
-                signal[odd].real = temp;
+                temp = twiddles[rootindex].real * signal->samples[odd].real - twiddles[rootindex].imag * signal->samples[odd].imag;
+                signal->samples[odd].imag = twiddles[rootindex].real * signal->samples[odd].imag + twiddles[rootindex].imag * signal->samples[odd].real;
+                signal->samples[odd].real = temp;
             }
 
         } // end of loop over n
@@ -146,7 +157,7 @@ void fft(Complex *signal, Complex *twiddles, int lenght){
     Bit_reversal(signal, lenght);
 }
 
-void ifft(Complex *signal, Complex *twiddles, int lenght){
+void ifft(Vector *signal, Complex *twiddles, int lenght){
 
 	unsigned int even, odd, span, log, rootindex;    // indexes
     float temp;
@@ -159,20 +170,20 @@ void ifft(Complex *signal, Complex *twiddles, int lenght){
             odd |= span;                    // iterate over odd blocks only
             even = odd ^ span;              // even part of the dual node pair
 
-            temp = signal[even].real + signal[odd].real;
-            signal[odd].real = signal[even].real - signal[odd].real;
-            signal[even].real = temp;
+            temp = signal->samples[even].real + signal->samples[odd].real;
+            signal->samples[odd].real = signal->samples[even].real - signal->samples[odd].real;
+            signal->samples[even].real = temp;
 
-            temp = signal[even].imag + signal[odd].imag;
-            signal[odd].imag = signal[even].imag - signal[odd].imag;
-            signal[even].imag = temp;
+            temp = signal->samples[even].imag + signal->samples[odd].imag;
+            signal->samples[odd].imag = signal->samples[even].imag - signal->samples[odd].imag;
+            signal->samples[even].imag = temp;
 
             rootindex = (even<<log) & (lenght-1); // find root of unity index
             if(rootindex){                    // skip rootindex[0] (has an identity)
 
-                temp = twiddles[rootindex].real * signal[odd].real - (-twiddles[rootindex].imag) * signal[odd].imag;
-                signal[odd].imag = twiddles[rootindex].real * signal[odd].imag + (-twiddles[rootindex].imag) * signal[odd].real;
-                signal[odd].real = temp;
+                temp = twiddles[rootindex].real * signal->samples[odd].real - (-twiddles[rootindex].imag) * signal->samples[odd].imag;
+                signal->samples[odd].imag = twiddles[rootindex].real * signal->samples[odd].imag + (-twiddles[rootindex].imag) * signal->samples[odd].real;
+                signal->samples[odd].real = temp;
             }
 
         } // end of loop over n
@@ -183,7 +194,7 @@ void ifft(Complex *signal, Complex *twiddles, int lenght){
     Normalize(signal, lenght);
 }
 
-void Generate_sweep(Complex *signal, int length){
+void Generate_sweep(Vector *signal, int length){
 
 	int i;
 	double wstart = 2*PI*FSTART;
@@ -197,18 +208,18 @@ void Generate_sweep(Complex *signal, int length){
 	for(i = 0; i < MUESTRAS_SWEEP; i++){
 
 		t = (double)i/FS;
-		signal[i].real = (float)(0.5 * sin(temp2 * (exp(temp1*t/DURACION_SWEEP) - 1)));
+		signal->samples[i].real = (float)(0.5 * sin(temp2 * (exp(temp1*t/DURACION_SWEEP) - 1)));
 
 		if(i < 16714)
-			signal[i].real *= (float)(1 - exp(-alpha_fadein * i));
+			signal->samples[i].real *= (float)(1 - exp(-alpha_fadein * i));
 
 		if(i > 211679)
-			signal[i].real *= (float)(1 - exp(alpha_fadeout * (i - (MUESTRAS_SWEEP - 1))));
+			signal->samples[i].real *= (float)(1 - exp(alpha_fadeout * (i - (MUESTRAS_SWEEP - 1))));
 
 	}
 }
 
-void Corregir_RespFrec(Complex *signal, Complex *record, Complex *twiddles, int length){
+void Corregir_RespFrec(Vector *signal, Vector *record, Complex *twiddles, int length){
 
 	int i;
 	double energy = 0;
@@ -229,9 +240,9 @@ void Corregir_RespFrec(Complex *signal, Complex *record, Complex *twiddles, int 
 	// Obtengo el espectro del sweep a sintetizar (en veces) y calculo el valor de la energia para la constante C
 	for(i = 0; i < length; i++){
 
-		record[i].real = (float)((double)(signal[i].real*signal[i].real + signal[i].imag*signal[i].imag)/sqrt((double)(record[i].real*record[i].real + record[i].imag*record[i].imag)));
+		record->samples[i].real = (float)((double)(signal->samples[i].real*signal->samples[i].real + signal->samples[i].imag*signal->samples[i].imag)/sqrt((double)(record->samples[i].real*record->samples[i].real + record->samples[i].imag*record->samples[i].imag)));
 		if(i < length/2)
-			energy += (double)(record[i].real*record[i].real);
+			energy += (double)(record->samples[i].real*record->samples[i].real);
 	}
 
 	// Calculo el valor de C
@@ -241,17 +252,17 @@ void Corregir_RespFrec(Complex *signal, Complex *record, Complex *twiddles, int 
 		for(i = 0; i < length; i++){
 
 			if(i == 0){
-				signal[i].real = record[i].real * (float)cos(phi);
-				signal[i].imag = record[i].real * (float)sin(phi);
+				signal->samples[i].real = record->samples[i].real * (float)cos(phi);
+				signal->samples[i].imag = record->samples[i].real * (float)sin(phi);
 			} else if(i < length/2){
-				tau_g = previous_tau_g + C*(double)(record[i].real*record[i].real);
+				tau_g = previous_tau_g + C*(double)(record->samples[i].real*record->samples[i].real);
 				phi = previous_phi - temp*tau_g;
-				signal[i].real = record[i].real * (float)cos(phi);
-				signal[i].imag = record[i].real * (float)sin(phi);
+				signal->samples[i].real = record->samples[i].real * (float)cos(phi);
+				signal->samples[i].imag = record->samples[i].real * (float)sin(phi);
 			} else {
-			    signal[i].real = record[i].real * (float)cos(phi);
-				signal[i].imag = record[i].real * (float)sin(phi);
-				tau_g = previous_tau_g - C*(double)(record[i].real*record[i].real);
+			    signal->samples[i].real = record->samples[i].real * (float)cos(phi);
+				signal->samples[i].imag = record->samples[i].real * (float)sin(phi);
+				tau_g = previous_tau_g - C*(double)(record->samples[i].real*record->samples[i].real);
 				phi = previous_phi + temp*tau_g;
 			}
 
@@ -264,11 +275,11 @@ void Corregir_RespFrec(Complex *signal, Complex *record, Complex *twiddles, int 
 
 	// Ajusto el nivel del sweep multiplicando por 2
 	for(i = 0; i < length; i++){
-		signal[i].real *= 2.0;
+		signal->samples[i].real *= 2.0;
 	}
 }
 
-void Obtener_RI(Complex *sweep, Complex *left_ch, Complex *right_ch, Complex *twiddles, int lenght){
+void Obtener_RI(Vector *sweep, Vector *left_ch, Vector *right_ch, Complex *twiddles, int lenght){
 
 	int i;
 	float denominador, tempLeft, tempRight;
@@ -279,15 +290,15 @@ void Obtener_RI(Complex *sweep, Complex *left_ch, Complex *right_ch, Complex *tw
 
 	for(i = 0; i < lenght; i++){
 
-		denominador = sweep[i].real * sweep[i].real + sweep[i].imag * sweep[i].imag;
-		tempLeft = left_ch[i].real;
-		tempRight = right_ch[i].real;
+		denominador = sweep->samples[i].real * sweep->samples[i].real + sweep->samples[i].imag * sweep->samples[i].imag;
+		tempLeft = left_ch->samples[i].real;
+		tempRight = right_ch->samples[i].real;
 
-		left_ch[i].real = (tempLeft * sweep[i].real + left_ch[i].imag * sweep[i].imag) / denominador;
-		left_ch[i].imag = (left_ch[i].imag * sweep[i].real - tempLeft * sweep[i].imag) / denominador;
+		left_ch->samples[i].real = (tempLeft * sweep->samples[i].real + left_ch->samples[i].imag * sweep->samples[i].imag) / denominador;
+		left_ch->samples[i].imag = (left_ch->samples[i].imag * sweep->samples[i].real - tempLeft * sweep->samples[i].imag) / denominador;
 
-		right_ch[i].real = (tempRight * sweep[i].real + right_ch[i].imag * sweep[i].imag) / denominador;
-		right_ch[i].imag = (right_ch[i].imag * sweep[i].real - tempRight * sweep[i].imag) / denominador;
+		right_ch->samples[i].real = (tempRight * sweep->samples[i].real + right_ch->samples[i].imag * sweep->samples[i].imag) / denominador;
+		right_ch->samples[i].imag = (right_ch->samples[i].imag * sweep->samples[i].real - tempRight * sweep->samples[i].imag) / denominador;
 	}
 
 	ifft(sweep, twiddles, lenght);

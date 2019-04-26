@@ -11,7 +11,10 @@
 #pragma DATA_SECTION(right_ch, ".EXT_RAM")
 #pragma DATA_SECTION(twiddles, ".EXT_RAM")
 
-Complex sweep[MUESTRAS], left_ch[MUESTRAS], right_ch[MUESTRAS];
+Vector sweep, left_ch, right_ch;
+Vector *sweep_ptr = &sweep;
+Vector *left_ch_ptr = &left_ch;
+Vector *right_ch_ptr = &right_ch;
 Complex twiddles[MUESTRAS/2];
 
 //-------------- Variables auxiliares ---------------
@@ -36,13 +39,13 @@ void main(){
 	Timer_init();
 	Interrup_init();
 
-	Vectores_reset(sweep, left_ch, right_ch, MUESTRAS);
+	Vectores_reset(sweep_ptr, left_ch_ptr, right_ch_ptr, MUESTRAS);
 	Twiddle_init(twiddles, MUESTRAS);
 
 	//-------------- Cargar Sweep desde la SD -----------
 
 	SD_init();
-	Load_sweep(sweep);
+	Load_sweep(sweep_ptr);
 
 	//-------------- Bucle infinito ------------------------
 
@@ -71,7 +74,7 @@ void main(){
 		if(!DSK6713_DIP_get(2) && puls_levantados){
 			Codec_init();
 			//Play_codec();
-			Obtener_RI(sweep, left_ch, right_ch, twiddles, MUESTRAS);
+			Obtener_RI(sweep_ptr, left_ch_ptr, right_ch_ptr, twiddles, MUESTRAS);
 			puls_levantados = 0;
 		}
 
@@ -91,10 +94,10 @@ void main(){
 
 interrupt void c_int11(){
 
-   Codec_out((short)sweep[j].real);
+   Codec_out((short)sweep[j].samples.real);
    Codec_data.sample = Codec_in();
-   left_ch[j].real = (float)Codec_data.channel[LEFT];
-   right_ch[j].real = (float)Codec_data.channel[RIGHT];
+   left_ch[j].samples.real = (float)Codec_data.channel[LEFT];
+   right_ch[j].samples.real = (float)Codec_data.channel[RIGHT];
 }
 
 interrupt void c_int10(){ //Interrumpe cada 1 micro segundo
