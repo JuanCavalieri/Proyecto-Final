@@ -27,19 +27,29 @@ Vector *right_ch_ptr = &right_ch;
 Complex twiddles[MUESTRAS/2];
 */
 
-void Vectores_reset(Vector *sweep, Vector *left_ch, Vector *right_ch, int lenght){
+void Vectores_reset(Vector *sweep, Vector *left_ch, Vector *right_ch, bool sweep_rst, bool left_ch_rst, bool right_ch_rst, int lenght){
 
 	int i;
 
 	for(i = 0; i < lenght; i++){
 
-		sweep->samples[i].real = 0;
-		sweep->samples[i].imag = 0;
-		left_ch->samples[i].real = 0;
-		left_ch->samples[i].imag = 0;
-		right_ch->samples[i].real = 0;
-		right_ch->samples[i].imag = 0;
+		if(sweep_rst){
+			sweep->samples[i].real = 0;
+			sweep->samples[i].imag = 0;
+		}
+		if(left_ch_rst){
+			left_ch->samples[i].real = 0;
+			left_ch->samples[i].imag = 0;
+		}
+		if(right_ch_rst){
+			right_ch->samples[i].real = 0;
+			right_ch->samples[i].imag = 0;
+		}
+
 	}
+	sweep->reseteado = 1;
+	left_ch->reseteado = 1;
+	right_ch->reseteado = 1;
 }
 
 void Twiddle_init(Complex *twiddles, int lenght){
@@ -194,7 +204,7 @@ void ifft(Vector *signal, Complex *twiddles, int lenght){
     Normalize(signal, lenght);
 }
 
-void Generate_sweep(Vector *signal, int length){
+void Generate_sweep(Vector *signal){
 
 	int i;
 	double wstart = 2*PI*FSTART;
@@ -217,6 +227,7 @@ void Generate_sweep(Vector *signal, int length){
 			signal->samples[i].real *= (float)(1 - exp(alpha_fadeout * (i - (MUESTRAS_SWEEP - 1))));
 
 	}
+	signal->muestras_utiles = MUESTRAS_SWEEP - 1;
 }
 
 void Corregir_RespFrec(Vector *signal, Vector *record, Complex *twiddles, int length){

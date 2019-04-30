@@ -10,6 +10,7 @@
 
 #define ARRANCAR_CODEC	Codec_out(0);
 extern Uint32 CodecEventId;
+extern int reproduciendo;
 
 //---------------- Union para los datos del Codec ----------------
 
@@ -34,9 +35,11 @@ unsigned int Codec_in(void){
 void Play_codec(unsigned char estado){
 	if(estado == 1){
 		IRQ_enable(CodecEventId);
+		reproduciendo = 1;
 		ARRANCAR_CODEC;
 	}else{
 		IRQ_reset(CodecEventId);
+		reproduciendo = 0;
 	}
 }
 

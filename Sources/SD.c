@@ -38,7 +38,7 @@ union{
 	} channels;
 }Sample;
 
-void Load_sweep(Complex* sweep){
+void Load_sweep(Vector *sweep){
 
 	FATFS FatFs;
 	FIL Fil;
@@ -54,22 +54,24 @@ void Load_sweep(Complex* sweep){
 
 	for(i = 0; i < cant_samples; i++){
 		f_read(&Fil, &sample, 4, &bytes);
-		sweep[i].real = (float)sample;
+		sweep->samples[i].real = (float)sample;
 	}
 
 	f_close(&Fil);
 }
 
-void Save_sweep(Complex* sweep, int size){
+void Save_sweep(Vector *sweep){
 
 	FATFS FatFs;
 	FIL Fil;
 	UINT bytes;
-	unsigned int i, cant_samples;
+	unsigned int i, size;
 	int sample = 0;
 
+	size = sweep->muestras_utiles * 4;
+
 	WavHeader.WAVFile.ChunkID = 0x46464952;
-	WavHeader.WAVFile.ChunkSize = 36 + size/2;
+	WavHeader.WAVFile.ChunkSize = 36 + size;
 	WavHeader.WAVFile.Format = 0x45564157;
 
 	WavHeader.WAVFile.SubChunk1ID = 0x20746d66;
@@ -82,29 +84,29 @@ void Save_sweep(Complex* sweep, int size){
 	WavHeader.WAVFile.BitsPerSample = 0x0020;
 
 	WavHeader.WAVFile.SubChunk2ID = 0x61746164;
-	WavHeader.WAVFile.SubChunk2Size = size/2;
+	WavHeader.WAVFile.SubChunk2Size = size;
 
 	f_mount(&FatFs, "", 0);
 	f_open(&Fil, "SWEEP.WAV", FA_WRITE | FA_OPEN_ALWAYS);
 	f_write(&Fil, &WavHeader.Header, 44, &bytes);
 
-	cant_samples = size/8;
+	for(i = 0; i < sweep->muestras_utiles; i++){
 
-	for(i = 0; i < cant_samples; i++){
-
-		sample = (int)sweep[i].real;
+		sample = (int)sweep->samples[i].real;
 		f_write(&Fil, &sample, 4, &bytes);
 	}
 
 	f_close(&Fil);
 }
 
-void Save_RI(Complex* left_ch, Complex* right_ch, int size){
+void Save_RI(Vector *left_ch, Vector *right_ch){
 
 	FATFS FatFs;
 	FIL Fil;
 	UINT bytes;
-	unsigned int i, cant_samples;
+	unsigned int i, size, cant_samples;
+
+	size = (left_ch->muestras_utiles + right_ch->muestras_utiles) * 4;
 
 	WavHeader.WAVFile.ChunkID = 0x46464952;
 	WavHeader.WAVFile.ChunkSize = 36 + size;
@@ -126,12 +128,12 @@ void Save_RI(Complex* left_ch, Complex* right_ch, int size){
 	f_open(&Fil, "SWEEP.WAV", FA_WRITE | FA_OPEN_ALWAYS);
 	f_write(&Fil, &WavHeader.Header, 44, &bytes);
 
-	cant_samples = size/8;
+	cant_samples = 1000; // CAMBIAR
 
 	for(i = 0; i < cant_samples; i++){
 
-		Sample.channels.left = (int)left_ch[i].real;
-		Sample.channels.right = (int)right_ch[i].real;
+		Sample.channels.left = (int)left_ch->samples[i].real;
+		Sample.channels.right = (int)right_ch->samples[i].real;
 		f_write(&Fil, &Sample.data, 8, &bytes);
 	}
 

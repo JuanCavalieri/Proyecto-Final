@@ -20,6 +20,11 @@ Sources/main.obj: C:/DSK6713/c6000/dsk6713/include/dsk6713_dip.h
 Sources/main.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/Inicializaciones.h
 Sources/main.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/SD.h
 Sources/main.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/Resp_impulso.h
+Sources/main.obj: C:/ti/ccsv5/tools/compiler/c6000_7.4.4/include/stdbool.h
+Sources/main.obj: C:/ti/ccsv5/tools/compiler/c6000_7.4.4/include/yvals.h
+Sources/main.obj: C:/ti/ccsv5/tools/compiler/c6000_7.4.4/include/stdarg.h
+Sources/main.obj: C:/ti/ccsv5/tools/compiler/c6000_7.4.4/include/linkage.h
+Sources/main.obj: C:/ti/ccsv5/tools/compiler/c6000_7.4.4/include/_lock.h
 Sources/main.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/Codec.h
 
 ../Sources/main.c: 
@@ -42,4 +47,9 @@ C:/DSK6713/c6000/dsk6713/include/dsk6713_dip.h:
 E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/Inicializaciones.h: 
 E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/SD.h: 
 E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/Resp_impulso.h: 
+C:/ti/ccsv5/tools/compiler/c6000_7.4.4/include/stdbool.h: 
+C:/ti/ccsv5/tools/compiler/c6000_7.4.4/include/yvals.h: 
+C:/ti/ccsv5/tools/compiler/c6000_7.4.4/include/stdarg.h: 
+C:/ti/ccsv5/tools/compiler/c6000_7.4.4/include/linkage.h: 
+C:/ti/ccsv5/tools/compiler/c6000_7.4.4/include/_lock.h: 
 E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/Codec.h: 

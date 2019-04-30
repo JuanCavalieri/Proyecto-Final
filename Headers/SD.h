@@ -10,8 +10,8 @@
 
 #include "Resp_impulso.h"
 
-void Load_sweep(Complex* sweep);
-void Save_sweep(Complex* sweep, int size);
-void Save_RI(Complex* left_ch, Complex* right_ch, int size);
+void Load_sweep(Vector *sweep);
+void Save_sweep(Vector *sweep);
+void Save_RI(Vector *left_ch, Vector *right_ch);
 
 #endif /* SD_H_ */
