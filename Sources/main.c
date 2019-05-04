@@ -65,7 +65,7 @@ void main(){
 			Play_codec(ON);
 			while(reproduciendo){};
 
-			Corregir_RespFrec(sweep_ptr, left_ch_ptr, twiddles, MUESTRAS); //Agregar en esta funcion la asignacion a la variable de longitud de muestras utiles
+			Corregir_RespFrec(sweep_ptr, left_ch_ptr, twiddles, MUESTRAS);
 
 			puls_levantados = 0;
 			modo_anterior = 1;

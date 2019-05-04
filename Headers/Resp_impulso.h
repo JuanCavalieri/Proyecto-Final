@@ -20,7 +20,6 @@ typedef struct{
 
 typedef struct{
 	Complex samples[MUESTRAS];
-	unsigned char reseteado;
 	int muestras_utiles;
 } Vector;
 

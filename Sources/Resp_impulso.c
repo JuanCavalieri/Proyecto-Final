@@ -47,9 +47,6 @@ void Vectores_reset(Vector *sweep, Vector *left_ch, Vector *right_ch, bool sweep
 		}
 
 	}
-	sweep->reseteado = 1;
-	left_ch->reseteado = 1;
-	right_ch->reseteado = 1;
 }
 
 void Twiddle_init(Complex *twiddles, int lenght){
@@ -234,7 +231,7 @@ void Corregir_RespFrec(Vector *signal, Vector *record, Complex *twiddles, int le
 
 	int i;
 	double energy = 0;
-	double tau_start = 0.25;
+	double tau_start = 0.05;
 	double tau_end = DURACION_SWEEP;
 	double tau_g = tau_start;
 	double previous_tau_g;
@@ -260,34 +257,39 @@ void Corregir_RespFrec(Vector *signal, Vector *record, Complex *twiddles, int le
 	C = (tau_end - tau_start)/energy;
 
 	// Calculo el valor del retardo de grupo, la fase y sintetizo el espectro del barrido deseado
-		for(i = 0; i < length; i++){
+	for(i = 0; i < length; i++){
 
-			if(i == 0){
-				signal->samples[i].real = record->samples[i].real * (float)cos(phi);
-				signal->samples[i].imag = record->samples[i].real * (float)sin(phi);
-			} else if(i < length/2){
-				tau_g = previous_tau_g + C*(double)(record->samples[i].real*record->samples[i].real);
-				phi = previous_phi - temp*tau_g;
-				signal->samples[i].real = record->samples[i].real * (float)cos(phi);
-				signal->samples[i].imag = record->samples[i].real * (float)sin(phi);
-			} else {
-			    signal->samples[i].real = record->samples[i].real * (float)cos(phi);
-				signal->samples[i].imag = record->samples[i].real * (float)sin(phi);
-				tau_g = previous_tau_g - C*(double)(record->samples[i].real*record->samples[i].real);
-				phi = previous_phi + temp*tau_g;
-			}
-
-			previous_tau_g = tau_g;
-			previous_phi = phi;
+		if(i == 0){
+			signal->samples[i].real = record->samples[i].real * (float)cos(phi);
+			signal->samples[i].imag = record->samples[i].real * (float)sin(phi);
+		} else if(i < length/2){
+			tau_g = previous_tau_g + C*(double)(record->samples[i].real*record->samples[i].real);
+			phi = previous_phi - temp*tau_g;
+			signal->samples[i].real = record->samples[i].real * (float)cos(phi);
+			signal->samples[i].imag = record->samples[i].real * (float)sin(phi);
+		} else {
+		    signal->samples[i].real = record->samples[i].real * (float)cos(phi);
+			signal->samples[i].imag = record->samples[i].real * (float)sin(phi);
+			tau_g = previous_tau_g - C*(double)(record->samples[i].real*record->samples[i].real);
+			phi = previous_phi + temp*tau_g;
 		}
+
+		previous_tau_g = tau_g;
+		previous_phi = phi;
+	}
 
 	// Paso el barrido a dominio temporal. De este vector hay que reproducir unicamente las muestras que ocupen el sweep
 	ifft(signal, twiddles, length);
 
-	// Ajusto el nivel del sweep multiplicando por 2
+	// Ajusto el nivel del sweep
 	for(i = 0; i < length; i++){
-		signal->samples[i].real *= 2.0;
+		if(i < FS*(tau_start + tau_end))
+			signal->samples[i].real *= 2.0;
+		else
+			signal->samples[i].real = 0.0;
 	}
+
+	signal->muestras_utiles = FS*(tau_start  + tau_end);
 }
 
 void Obtener_RI(Vector *sweep, Vector *left_ch, Vector *right_ch, Complex *twiddles, int lenght){
