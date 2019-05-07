@@ -27,11 +27,11 @@ Vector *right_ch_ptr = &right_ch;
 Complex twiddles[MUESTRAS/2];
 */
 
-void Vectores_reset(Vector *sweep, Vector *left_ch, Vector *right_ch, bool sweep_rst, bool left_ch_rst, bool right_ch_rst, int lenght){
+void Vectores_reset(Vector *sweep, Vector *left_ch, Vector *right_ch, bool sweep_rst, bool left_ch_rst, bool right_ch_rst){
 
 	int i;
 
-	for(i = 0; i < lenght; i++){
+	for(i = 0; i < MUESTRAS; i++){
 
 		if(sweep_rst){
 			sweep->samples[i].real = 0;
@@ -49,12 +49,12 @@ void Vectores_reset(Vector *sweep, Vector *left_ch, Vector *right_ch, bool sweep
 	}
 }
 
-void Twiddle_init(Complex *twiddles, int lenght){
+void Twiddle_init(Complex *twiddles){
 
 	int i;
 	double temp;
 
-	for(i = 0; i < lenght/2; i++){
+	for(i = 0; i < MUESTRAS/2; i++){
 
 		temp = 2*PI*i/lenght;
 		twiddles[i].real = (float)cos(temp);
@@ -62,14 +62,14 @@ void Twiddle_init(Complex *twiddles, int lenght){
 	}
 }
 
-void Normalize(Vector *signal, int lenght){
+void Normalize(Vector *signal){
 
 	int i;
 	float norm;
 
-	norm = 1.0/(float)lenght;
+	norm = 1.0/(float)MUESTRAS;
 
-	for(i = 0;i < lenght; i++){
+	for(i = 0;i < MUESTRAS; i++){
 
 		signal->samples[i].real *= norm;
 		signal->samples[i].imag *= norm;
@@ -227,7 +227,7 @@ void Generate_sweep(Vector *signal){
 	signal->muestras_utiles = MUESTRAS_SWEEP - 1;
 }
 
-void Corregir_RespFrec(Vector *signal, Vector *record, Complex *twiddles, int length){
+void Corregir_RespFrec(Vector *signal, Vector *record, Complex *twiddles){
 
 	int i;
 	double energy = 0;
@@ -242,14 +242,14 @@ void Corregir_RespFrec(Vector *signal, Vector *record, Complex *twiddles, int le
 
 
 	// Obtengo el espectro del sweep y de la grabacion
-	fft(signal, twiddles, length);
-	fft(record, twiddles, length);
+	fft(signal, twiddles, MUESTRAS);
+	fft(record, twiddles, MUESTRAS);
 
 	// Obtengo el espectro del sweep a sintetizar (en veces) y calculo el valor de la energia para la constante C
 	for(i = 0; i < length; i++){
 
 		record->samples[i].real = (float)((double)(signal->samples[i].real*signal->samples[i].real + signal->samples[i].imag*signal->samples[i].imag)/sqrt((double)(record->samples[i].real*record->samples[i].real + record->samples[i].imag*record->samples[i].imag)));
-		if(i < length/2)
+		if(i < MUESTRAS/2)
 			energy += (double)(record->samples[i].real*record->samples[i].real);
 	}
 
@@ -257,12 +257,12 @@ void Corregir_RespFrec(Vector *signal, Vector *record, Complex *twiddles, int le
 	C = (tau_end - tau_start)/energy;
 
 	// Calculo el valor del retardo de grupo, la fase y sintetizo el espectro del barrido deseado
-	for(i = 0; i < length; i++){
+	for(i = 0; i < MUESTRAS; i++){
 
 		if(i == 0){
 			signal->samples[i].real = record->samples[i].real * (float)cos(phi);
 			signal->samples[i].imag = record->samples[i].real * (float)sin(phi);
-		} else if(i < length/2){
+		} else if(i < MUESTRAS/2){
 			tau_g = previous_tau_g + C*(double)(record->samples[i].real*record->samples[i].real);
 			phi = previous_phi - temp*tau_g;
 			signal->samples[i].real = record->samples[i].real * (float)cos(phi);
@@ -279,10 +279,10 @@ void Corregir_RespFrec(Vector *signal, Vector *record, Complex *twiddles, int le
 	}
 
 	// Paso el barrido a dominio temporal. De este vector hay que reproducir unicamente las muestras que ocupen el sweep
-	ifft(signal, twiddles, length);
+	ifft(signal, twiddles, MUESTRAS);
 
 	// Ajusto el nivel del sweep
-	for(i = 0; i < length; i++){
+	for(i = 0; i < MUESTRAS; i++){
 		if(i < FS*(tau_start + tau_end))
 			signal->samples[i].real *= 2.0;
 		else
@@ -292,16 +292,16 @@ void Corregir_RespFrec(Vector *signal, Vector *record, Complex *twiddles, int le
 	signal->muestras_utiles = FS*(tau_start  + tau_end);
 }
 
-void Obtener_RI(Vector *sweep, Vector *left_ch, Vector *right_ch, Complex *twiddles, int lenght){
+void Obtener_RI(Vector *sweep, Vector *left_ch, Vector *right_ch, Complex *twiddles){
 
 	int i;
 	float denominador, tempLeft, tempRight;
 
-	fft(sweep, twiddles, lenght);
-	fft(left_ch, twiddles, lenght);
-	fft(right_ch, twiddles, lenght);
+	fft(sweep, twiddles, MUESTRAS);
+	fft(left_ch, twiddles, MUESTRAS);
+	fft(right_ch, twiddles, MUESTRAS);
 
-	for(i = 0; i < lenght; i++){
+	for(i = 0; i < MUESTRAS; i++){
 
 		denominador = sweep->samples[i].real * sweep->samples[i].real + sweep->samples[i].imag * sweep->samples[i].imag;
 		tempLeft = left_ch->samples[i].real;
@@ -314,7 +314,7 @@ void Obtener_RI(Vector *sweep, Vector *left_ch, Vector *right_ch, Complex *twidd
 		right_ch->samples[i].imag = (right_ch->samples[i].imag * sweep->samples[i].real - tempRight * sweep->samples[i].imag) / denominador;
 	}
 
-	ifft(sweep, twiddles, lenght);
-	ifft(left_ch, twiddles, lenght);
-	ifft(right_ch, twiddles, lenght);
+	ifft(sweep, twiddles, MUESTRAS);
+	ifft(left_ch, twiddles, MUESTRAS);
+	ifft(right_ch, twiddles, MUESTRAS);
 }

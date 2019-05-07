@@ -10,7 +10,7 @@
 
 #include "Resp_impulso.h"
 
-void Load_sweep(Vector *sweep);
+int Load_sweep(Vector *sweep);
 void Save_sweep(Vector *sweep);
 void Save_RI(Vector *left_ch, Vector *right_ch);
 

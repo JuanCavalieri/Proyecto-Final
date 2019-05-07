@@ -38,26 +38,39 @@ union{
 	} channels;
 }Sample;
 
-void Load_sweep(Vector *sweep){
+int Load_sweep(Vector *sweep){
 
 	FATFS FatFs;
+	FRESULT fr;
+	FILINFO fno;
 	FIL Fil;
 	UINT bytes;
 	unsigned int i, cant_samples;
-	int sample = 0;
+	short sample = 0;
+
+	if(f_stat("sweep_corregido.wav", &fno) == FR_NO_FILE) //Chequear que funcione con el nombre en minuscula
+		return 1;
 
 	f_mount(&FatFs, "", 0);
-	f_open(&Fil, "SWEEP.WAV", FA_READ | FA_OPEN_ALWAYS);
-	f_read(&Fil, WavHeader.Header, 44, &bytes);
+
+	if(f_open(&Fil, "sweep_corregido.wav", FA_READ | FA_OPEN_ALWAYS) != FR_OK)
+		return 2;
+
+	if(f_read(&Fil, WavHeader.Header, 44, &bytes) != FR_OK)
+		return 2;
 
 	cant_samples = WavHeader.WAVFile.SubChunk2Size / (WavHeader.WAVFile.NumChannels * WavHeader.WAVFile.BitsPerSample / 8);
 
 	for(i = 0; i < cant_samples; i++){
-		f_read(&Fil, &sample, 4, &bytes);
-		sweep->samples[i].real = (float)sample;
+
+		if(f_read(&Fil, &sample, 2, &bytes) != FR_OK)
+			return 2;
+
+		sweep->samples[i].real = ((float)sample)/CONST_CONVER;
 	}
 
 	f_close(&Fil);
+	return 0;
 }
 
 void Save_sweep(Vector *sweep){
