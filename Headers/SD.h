@@ -11,7 +11,7 @@
 #include "Resp_impulso.h"
 
 int Load_sweep(Vector *sweep);
-void Save_sweep(Vector *sweep);
-void Save_RI(Vector *left_ch, Vector *right_ch);
+int Save_sweep(Vector *sweep);
+int Save_RI(Vector *left_ch, Vector *right_ch, int n_medicion);
 
 #endif /* SD_H_ */

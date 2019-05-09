@@ -11,7 +11,7 @@
 #include "stdbool.h"
 
 #define MUESTRAS	524288
-#define CONST_CONVER	32768 //tal vez deberia ser la mitad
+#define CONST_CONVER	32767 //tal vez deberia ser la mitad
 #define PI	3.14159265358979
 
 typedef struct{

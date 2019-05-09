@@ -24,6 +24,7 @@ int puls_levantados = 1;
 int modo_anterior = 0;
 int reproduciendo = 0;
 int grabo_ruido = 0;
+int n_medicion = 0;
 int j = 0;
 
 extern union{
@@ -42,8 +43,8 @@ void main(){
 	Timer_init();
 	Interrup_init();
 
-	Vectores_reset(sweep_ptr, left_ch_ptr, right_ch_ptr, true, true, true, MUESTRAS);
-	Twiddle_init(twiddles, MUESTRAS);
+	Vectores_reset(sweep_ptr, left_ch_ptr, right_ch_ptr, true, true, true);
+	Twiddle_init(twiddles);
 
 	//-------------- Cargar Sweep desde la SD -----------
 
@@ -59,13 +60,13 @@ void main(){
 		//---------- Modo 1 --------------------------------
 		if(!DSK6713_DIP_get(0) && puls_levantados){
 			Codec_init();
-			Vectores_reset(sweep_ptr, left_ch_ptr, right_ch_ptr, true, true, true, MUESTRAS);
+			Vectores_reset(sweep_ptr, left_ch_ptr, right_ch_ptr, true, true, true);
 			Generate_sweep(sweep_ptr);
 
 			Play_codec(ON);
 			while(reproduciendo){};
 
-			Corregir_RespFrec(sweep_ptr, left_ch_ptr, twiddles, MUESTRAS);
+			Corregir_RespFrec(sweep_ptr, left_ch_ptr, twiddles);
 
 			puls_levantados = 0;
 			modo_anterior = 1;
@@ -74,9 +75,9 @@ void main(){
 		//---------- Modo 2 --------------------------------
 		if(!DSK6713_DIP_get(1) && puls_levantados){
 			if(modo_anterior == 0 || modo_anterior == 2 || modo_anterior == 3){
-				Vectores_reset(sweep_ptr, left_ch_ptr, right_ch_ptr, false, true, true, MUESTRAS);
+				Vectores_reset(sweep_ptr, left_ch_ptr, right_ch_ptr, false, true, true);
 			}else{
-				Vectores_reset(sweep_ptr, left_ch_ptr, right_ch_ptr, true, true, true, MUESTRAS);
+				Vectores_reset(sweep_ptr, left_ch_ptr, right_ch_ptr, true, true, true);
 				SD_init();
 				//if (existe sweep_corregido en SD){
 					//	Load_sweep(sweep_ptr);
@@ -102,9 +103,9 @@ void main(){
 		//---------- Modo 3 --------------------------------
 		if(!DSK6713_DIP_get(2) && puls_levantados){
 			if(modo_anterior == 0 || modo_anterior == 2 || modo_anterior == 3){
-				Vectores_reset(sweep_ptr, left_ch_ptr, right_ch_ptr, false, true, true, MUESTRAS);
+				Vectores_reset(sweep_ptr, left_ch_ptr, right_ch_ptr, false, true, true);
 			}else{
-				Vectores_reset(sweep_ptr, left_ch_ptr, right_ch_ptr, true, true, true, MUESTRAS);
+				Vectores_reset(sweep_ptr, left_ch_ptr, right_ch_ptr, true, true, true);
 				SD_init();
 				//if (existe sweep_corregido en SD){
 					//	Load_sweep(sweep_ptr);
@@ -114,7 +115,7 @@ void main(){
 
 			Play_codec(ON);
 			while(reproduciendo){};
-			Obtener_RI(sweep_ptr, left_ch_ptr, right_ch_ptr, twiddles, MUESTRAS);
+			Obtener_RI(sweep_ptr, left_ch_ptr, right_ch_ptr, twiddles); //Falta guardar la cantidad de muestras utiles en los vetores de salida
 
 			puls_levantados = 0;
 			modo_anterior = 3;
@@ -127,8 +128,8 @@ void main(){
 				Save_sweep(sweep_ptr);
 
 			if(modo_anterior == 3)
-				Save_RI(left_ch_ptr, right_ch_ptr); //Terminar de definir la longitud de la RI a guardar
-													//Resolver el tema de porder guardar varias RI con diferentes nombres
+				Save_RI(left_ch_ptr, right_ch_ptr, n_medicion); //Terminar de definir la longitud de la RI a guardar
+				n_medicion++;
 
 			puls_levantados = 0;
 			modo_anterior = 4;

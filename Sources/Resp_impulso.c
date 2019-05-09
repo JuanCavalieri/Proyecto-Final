@@ -56,7 +56,7 @@ void Twiddle_init(Complex *twiddles){
 
 	for(i = 0; i < MUESTRAS/2; i++){
 
-		temp = 2*PI*i/lenght;
+		temp = 2*PI*i/MUESTRAS;
 		twiddles[i].real = (float)cos(temp);
 		twiddles[i].imag = (float)-sin(temp);
 	}
@@ -198,7 +198,7 @@ void ifft(Vector *signal, Complex *twiddles, int lenght){
      } // end of loop over FFT stages
 
     Bit_reversal(signal, lenght);
-    Normalize(signal, lenght);
+    Normalize(signal);
 }
 
 void Generate_sweep(Vector *signal){
@@ -246,7 +246,7 @@ void Corregir_RespFrec(Vector *signal, Vector *record, Complex *twiddles){
 	fft(record, twiddles, MUESTRAS);
 
 	// Obtengo el espectro del sweep a sintetizar (en veces) y calculo el valor de la energia para la constante C
-	for(i = 0; i < length; i++){
+	for(i = 0; i < MUESTRAS; i++){
 
 		record->samples[i].real = (float)((double)(signal->samples[i].real*signal->samples[i].real + signal->samples[i].imag*signal->samples[i].imag)/sqrt((double)(record->samples[i].real*record->samples[i].real + record->samples[i].imag*record->samples[i].imag)));
 		if(i < MUESTRAS/2)
