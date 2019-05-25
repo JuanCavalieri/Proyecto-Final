@@ -1,8 +1,10 @@
 #include "DSK6713_AIC23.h"
 #include "dsk6713_dip.h"
+#include "dsk6713_led.h"
 #include "Inicializaciones.h"
 #include "SD.h"
 #include "Codec.h"
+#include "Runtime_errors.h"
 
 //-------------- Vectores de señales ----------------
 
@@ -25,6 +27,7 @@ int modo_anterior = 0;
 int reproduciendo = 0;
 int grabo_ruido = 0;
 int n_medicion = 0;
+int estado = 0;
 int j = 0;
 
 extern union{
@@ -49,9 +52,8 @@ void main(){
 	//-------------- Cargar Sweep desde la SD -----------
 
 	SD_init();
-	//if (existe sweep_corregido en SD){
-	//	Load_sweep(sweep_ptr);
-	//}
+	estado = Load_sweep(sweep_ptr);
+	check_error(estado);
 
 	//-------------- Bucle infinito ------------------------
 
@@ -79,9 +81,8 @@ void main(){
 			}else{
 				Vectores_reset(sweep_ptr, left_ch_ptr, right_ch_ptr, true, true, true);
 				SD_init();
-				//if (existe sweep_corregido en SD){
-					//	Load_sweep(sweep_ptr);
-					//}
+				estado = Load_sweep(sweep_ptr);
+				check_error(estado);
 			}
 			Codec_init();
 
@@ -107,9 +108,8 @@ void main(){
 			}else{
 				Vectores_reset(sweep_ptr, left_ch_ptr, right_ch_ptr, true, true, true);
 				SD_init();
-				//if (existe sweep_corregido en SD){
-					//	Load_sweep(sweep_ptr);
-					//}
+				estado = Load_sweep(sweep_ptr);
+				check_error(estado);
 			}
 			Codec_init();
 
@@ -124,12 +124,16 @@ void main(){
 		//---------- Modo 4 --------------------------------
 		if(!DSK6713_DIP_get(3) && puls_levantados){
 			SD_init();
-			if(modo_anterior == 1)
-				Save_sweep(sweep_ptr);
+			if(modo_anterior == 1){
+				estado = Save_sweep(sweep_ptr);
+				check_error(estado);
+			}
 
-			if(modo_anterior == 3)
-				Save_RI(left_ch_ptr, right_ch_ptr, n_medicion); //Terminar de definir la longitud de la RI a guardar
+			if(modo_anterior == 3){
+				estado = Save_RI(left_ch_ptr, right_ch_ptr, n_medicion); //Terminar de definir la longitud de la RI a guardar
+				check_error(estado);
 				n_medicion++;
+			}
 
 			puls_levantados = 0;
 			modo_anterior = 4;
@@ -147,11 +151,11 @@ interrupt void c_int11(){
 		if(grabo_ruido)
 			Codec_out(0);
 		else
-			Codec_out((short)sweep.samples[j].real);
+			Codec_out((short)(sweep.samples[j].real * CONST_CONVER));
 
 		Codec_data.sample = Codec_in();
-		left_ch.samples[j].real = (float)Codec_data.channel[LEFT];
-		right_ch.samples[j].real = (float)Codec_data.channel[RIGHT];
+		left_ch.samples[j].real = ((float)Codec_data.channel[LEFT])/CONST_CONVER;
+		right_ch.samples[j].real = ((float)Codec_data.channel[RIGHT])/CONST_CONVER;
 
 		j++;
 	}else{
