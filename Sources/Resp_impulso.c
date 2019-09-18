@@ -7,14 +7,14 @@
 #include "math.h"
 #include "Resp_impulso.h"
 
-#define FS 44100.0 // Hz
-#define DURACION_SWEEP 5.0 // segundos
-#define FSTART 20.0 // Hz
-#define FEND 22000.0 // Hz
-#define DURACION_FADEIN 0.379 // segundos
-#define DURACION_FADEOUT 0.2 // segundos
+#define FS 44100.0 				// Frecuencia de muestreo de las señales de audio [Hz]
+#define DURACION_SWEEP 5.0 		// Tiempo de duracion de la señal de exitacion [s]
+#define FSTART 20.0 			// Frecuencia inicial de la señal generada [Hz]
+#define FEND 22000.0 			// Frecuencia final de la señal generada [Hz]
+#define DURACION_FADEIN 0.379 	// Tiempo de duracion del fadein de la señal generada [s]
+#define DURACION_FADEOUT 0.2 	// Tiempo de duracion del fadeout de la señal generada [s]
 
-#define MUESTRAS_SWEEP FS*DURACION_SWEEP
+#define MUESTRAS_SWEEP FS*DURACION_SWEEP	// Cantidad de muestras que tiene la señal generada
 
 /* Se declaran en el main.c para evitar conflictos con
  * la sentencia #pragma DATA_SECTION(). Sino estas variables deberian
@@ -28,6 +28,13 @@ Complex twiddles[MUESTRAS/2];
 */
 
 void Vectores_reset(Vector *sweep, Vector *left_ch, Vector *right_ch, bool sweep_rst, bool left_ch_rst, bool right_ch_rst){
+
+	/* Permite resetear los valores de todas las componentes de los vectores de señal.
+	 *
+	 * Args:
+	 * 		*sweep, *left_ch, *right_ch: Punteros a los vectores de señales
+	 * 		sweep_rst, left_ch_rst, right_ch_rst: Booleanos indicando si se debe resetear el vector correspondiente a cada uno
+	 * */
 
 	int i;
 
@@ -51,6 +58,12 @@ void Vectores_reset(Vector *sweep, Vector *left_ch, Vector *right_ch, bool sweep
 
 void Twiddle_init(Complex *twiddles){
 
+	/* Inicializa las constantes Twiddle que se utilizan en las funciones fft y ifft.
+	 *
+	 * Args:
+	 * 		*twiddles: Puntero al array de numeros complejos donde se almacenaran las constantes
+	 * */
+
 	int i;
 	double temp;
 
@@ -62,7 +75,13 @@ void Twiddle_init(Complex *twiddles){
 	}
 }
 
-void Normalize(Vector *signal){
+void _normalize(Vector *signal){
+
+	/* Aplica la normalizacion 1/N a los valores devueltos por la funcion de ifft.
+	 *
+	 * Args:
+	 * 		*signal: Puntero al vector señal al que se le aplicara la normalizacion
+	 * */
 
 	int i;
 	float norm;
@@ -76,46 +95,50 @@ void Normalize(Vector *signal){
 	}
 }
 
-void Bit_reversal(Vector *signal, unsigned int lenght){
+void _bit_reversal(Vector *signal, unsigned int lenght){
+
+	/* Algoritmo de bit reversal requerido en las funciones de fft y ifft.
+	 *
+	 * Args:
+	 * 		*signal: Puntero al vector señal al que se le aplicara la reversion.
+	 * 		length: Longitud del vector al que se le aplicara la reversion.
+	 * */
 
     unsigned int i, forward, rev, zeros;
-    unsigned int nodd, noddrev;        // to hold bitwise negated or odd values
+    unsigned int nodd, noddrev;
     unsigned int halfn, quartn, nmin1;
 
-    halfn = lenght>>1;            // frequently used 'constants'
+    halfn = lenght>>1;
     quartn = lenght>>2;
     nmin1 = lenght-1;
 
-    forward = halfn;         // variable initialisations
+    forward = halfn;
     rev = 1;
 
-    for(i=quartn; i; i--)    // start of bitreversed permutation loop, N/4 iterations
-    {
+    for(i=quartn; i; i--){
 
-     // Gray code generator for even values:
+		nodd = ~i;
+		for(zeros=0; nodd&1; zeros++) nodd >>= 1;
+		forward ^= 2 << zeros;
+		rev ^= quartn >> zeros;
 
-     nodd = ~i;                                  // counting ones is easier
-     for(zeros=0; nodd&1; zeros++) nodd >>= 1;   // find trailing zero's in i
-     forward ^= 2 << zeros;                      // toggle one bit of forward
-     rev ^= quartn >> zeros;                     // toggle one bit of rev
+			if(forward<rev){
+				_swap(forward, rev, signal);
+				nodd = nmin1 ^ forward;
+				noddrev = nmin1 ^ rev;
+				_swap(nodd, noddrev, signal);
+			}
 
-
-        if(forward<rev)                          // swap even and ~even conditionally
-        {
-            swap(forward, rev, signal);
-            nodd = nmin1 ^ forward;              // compute the bitwise negations
-            noddrev = nmin1 ^ rev;
-            swap(nodd, noddrev, signal);       // swap bitwise-negated pairs
-        }
-
-        nodd = forward ^ 1;                      // compute the odd values from the even
-        noddrev = rev ^ halfn;
-        swap(nodd, noddrev, signal);           // swap odd unconditionally
+			nodd = forward ^ 1;
+			noddrev = rev ^ halfn;
+			_swap(nodd, noddrev, signal);
     }
-    // end of the bitreverse permutation loop
 }
 
-static inline void swap(unsigned int forward, unsigned int rev, Vector *signal){
+static inline void _swap(unsigned int forward, unsigned int rev, Vector *signal){
+
+	/* Funcion auxiliar necesaria para ejecutar _bit_reversal.
+	 * */
 
 	float temp;
 
@@ -130,16 +153,27 @@ static inline void swap(unsigned int forward, unsigned int rev, Vector *signal){
 
 void fft(Vector *signal, Complex *twiddles, int lenght){
 
-	unsigned int even, odd, span, log, rootindex;    // indexes
+	/* Realiza la fft (Fast Fourier Transform) de longitud length sobre la señal en signal en dominio tiempo.
+	 * Almacena el resultado, en dominio frecuencial, en el mismo vector signal. La funcion presupone que el
+	 * vector signal tiene longitud length y que si la señal util es mas corta que el propio vector signal,
+	 * el resto del mismo vale 0.
+	 *
+	 * Args:
+	 * 		*signal: Puntero al vector con la señal a transformar.
+	 * 		*twiddles: Puntero al vector con las constantes twiddle.
+	 * 		length: Longitud de la transformada.
+	 * */
+
+	unsigned int even, odd, span, log, rootindex;
 	float temp;
 	log=0;
 
 	for(span=lenght>>1; span; span>>=1, log++){
 
-        for(odd=span; odd<lenght; odd++){         // iterate over the dual nodes
+        for(odd=span; odd<lenght; odd++){
 
-            odd |= span;                    // iterate over odd blocks only
-            even = odd ^ span;              // even part of the dual node pair
+            odd |= span;
+            even = odd ^ span;
 
             temp = signal->samples[even].real + signal->samples[odd].real;
             signal->samples[odd].real = signal->samples[even].real - signal->samples[odd].real;
@@ -149,33 +183,41 @@ void fft(Vector *signal, Complex *twiddles, int lenght){
             signal->samples[odd].imag = signal->samples[even].imag - signal->samples[odd].imag;
             signal->samples[even].imag = temp;
 
-            rootindex = (even<<log) & (lenght-1); // find root of unity index
-            if(rootindex){                    // skip rootindex[0] (has an identity)
+            rootindex = (even<<log) & (lenght-1);
+            if(rootindex){
 
                 temp = twiddles[rootindex].real * signal->samples[odd].real - twiddles[rootindex].imag * signal->samples[odd].imag;
                 signal->samples[odd].imag = twiddles[rootindex].real * signal->samples[odd].imag + twiddles[rootindex].imag * signal->samples[odd].real;
                 signal->samples[odd].real = temp;
             }
+        }
+     }
 
-        } // end of loop over n
-
-     } // end of loop over FFT stages
-
-    Bit_reversal(signal, lenght);
+    _bit_reversal(signal, lenght);
 }
 
 void ifft(Vector *signal, Complex *twiddles, int lenght){
 
-	unsigned int even, odd, span, log, rootindex;    // indexes
+	/* Realiza la ifft (Inverse Fast Fourier Transform) de longitud length sobre la señal en signal en dominio frecuencial.
+	 * Almacena el resultado, en dominio tiempo, en el mismo vector signal. La funcion presupone que el
+	 * vector signal tiene longitud length.
+	 *
+	 * Args:
+	 * 		*signal: Puntero al vector con la señal a antitransformar.
+	 * 		*twiddles: Puntero al vector con las constantes twiddle.
+	 * 		length: Longitud de la transformada.
+	 * */
+
+	unsigned int even, odd, span, log, rootindex;
     float temp;
     log=0;
 
     for(span=lenght>>1; span; span>>=1, log++){
 
-        for(odd=span; odd<lenght; odd++){         // iterate over the dual nodes
+        for(odd=span; odd<lenght; odd++){
 
-            odd |= span;                    // iterate over odd blocks only
-            even = odd ^ span;              // even part of the dual node pair
+            odd |= span;
+            even = odd ^ span;
 
             temp = signal->samples[even].real + signal->samples[odd].real;
             signal->samples[odd].real = signal->samples[even].real - signal->samples[odd].real;
@@ -185,23 +227,31 @@ void ifft(Vector *signal, Complex *twiddles, int lenght){
             signal->samples[odd].imag = signal->samples[even].imag - signal->samples[odd].imag;
             signal->samples[even].imag = temp;
 
-            rootindex = (even<<log) & (lenght-1); // find root of unity index
-            if(rootindex){                    // skip rootindex[0] (has an identity)
+            rootindex = (even<<log) & (lenght-1);
+            if(rootindex){
 
                 temp = twiddles[rootindex].real * signal->samples[odd].real - (-twiddles[rootindex].imag) * signal->samples[odd].imag;
                 signal->samples[odd].imag = twiddles[rootindex].real * signal->samples[odd].imag + (-twiddles[rootindex].imag) * signal->samples[odd].real;
                 signal->samples[odd].real = temp;
             }
+        }
+     }
 
-        } // end of loop over n
-
-     } // end of loop over FFT stages
-
-    Bit_reversal(signal, lenght);
-    Normalize(signal);
+    _bit_reversal(signal, lenght);
+    _normalize(signal);
 }
 
 void Generate_sweep(Vector *signal){
+
+	/* Genera una señal senoidal de frecuencia variable que comienza en FSTART y termina en FEND,
+	 * con una duracion igual a DURACION_SWEEP que se almacena en el vector signal segun la formula
+	 * presente en [], referenciado en la bibliografia del informe del presente trabajo. Ademas, se
+	 * le aplica a la misma un efecto de fade in de duracion DURACION_FADEIN y otro de fade out de
+	 * duracion DURACION_FADEOUT.
+	 *
+	 * Args:
+	 * 		*signal: Puntero al vector donde almacenar la señal generada.
+	 * */
 
 	int i;
 	double wstart = 2*PI*FSTART;
@@ -227,7 +277,80 @@ void Generate_sweep(Vector *signal){
 	signal->muestras_utiles = MUESTRAS_SWEEP - 1;
 }
 
+void Promediar(Vector *record_lft, Vector *record_rgt){
+
+	/* Realiza un promedio entre las muestras de las señales grabadas en toma estereo.
+	 * Almacena el resultado en el primer vector pasado como argumento.
+	 *
+	 * Args:
+	 * 		*record_lft: Puntero al vector con la señal del canal izquierdo.
+	 * 		*record_rgt: Puntero al vector con la señal del canal derecho.
+	 * */
+
+	int i;
+
+	for(i = 0; i < record_lft->muestras_utiles; i++ ){
+		record_lft->samples[i].real = (record_lft->samples[i].real + record_rgt->samples[i].real) / 2.0;
+	}
+}
+
+void Filtrar(Vector *signal, Vector *filtro){
+
+	/* Realiza el filtrado entre la señal en signal y el filtro. El mismo se realiza en
+	 * dominio frecuencial, por lo que ambos vectores deben contener los espectros de las
+	 * señales correspondientes.
+	 *
+	 * Args:
+	 * 		*signal: Puntero al vector con la señal a filtrar.
+	 * 		*filtro: Puntero al vector con el filtro a aplicar.
+	 * */
+
+	int i;
+	float temp;
+
+	for(i = 0; i < signal->muestras_utiles; i++){
+
+		temp = filtro->samples[i].real;
+		filtro->samples[i].real = signal->samples[i].real*filtro->samples[i].real - signal->samples[i].imag*filtro->samples[i].imag;
+		filtro->samples[i].imag = signal->samples[i].real*filtro->samples[i].imag + signal->samples[i].imag*temp;
+	}
+}
+
+float Valor_rms(Vector *signal, int length){
+
+	/* Calcula el valor rms de la señal en el vector signal. El valor length indica hasta
+	 * que componente del vector se toma la señal para calcular su valor rms.
+	 *
+	 * Args:
+	 * 		*signal: Puntero al vector con la señal a la cual calcular el valor rms.
+	 * 		length: Longitud que abarca la señal util en el vector signal.
+	 * 	Return:
+	 * 		float con el valor rms de la señal de entrada.
+	 * */
+
+	int i;
+	float aux = 0.0;
+
+	for(i = 0; i <= length; i++){
+
+		aux += signal->samples[i].real*signal->samples[i].real;
+	}
+
+	aux = (float)sqrt(aux/(float)length);
+	return aux;
+}
+
 void Corregir_RespFrec(Vector *signal, Vector *record, Complex *twiddles){
+
+	/* Corrige la señal de exitacion utilizada (signal) en funcion de la respuesta en
+	 * frecuencia del sistema de sonido utilizado para las mediciones. La nueva señal
+	 * de exitacion corregida se almacena en el mismo vector signal.
+	 *
+	 * Args:
+	 * 		*signal: Puntero al vector con la señal de exitacion sin corregir.
+	 * 		*record: Puntero al vector con la señal grabada en la medicion.
+	 * 		*twiddles: Puntero al vector con las constantes twiddles.
+	 * */
 
 	int i;
 	double energy = 0;
@@ -293,6 +416,15 @@ void Corregir_RespFrec(Vector *signal, Vector *record, Complex *twiddles){
 }
 
 void Obtener_RI(Vector *sweep, Vector *left_ch, Vector *right_ch, Complex *twiddles){
+
+	/* Obtiene la respuesta al impulso del recinto bajo medicion. La misma es almacenada
+	 * en los vectores left_ch y right_ch de forma estereo.
+	 *
+	 * Args:
+	 * 		*sweep: Puntero al vector con la señal de exitacion utilizada.
+	 * 		*left_ch y *right_ch: Punteros a los vectores que contienen las señales grabadas en la medicion por la toma estereo.
+	 * 		*twiddles: Puntero al vector con las constantes twiddle.
+	 * */
 
 	int i;
 	float denominador, tempLeft, tempRight;

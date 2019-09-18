@@ -8,6 +8,8 @@
 #ifndef RUNTIME_ERRORS_H_
 #define RUNTIME_ERRORS_H_
 
+/* --------- Funciones implementadas --------- */
+
 void check_error(int estado){
 
 	DSK6713_LED_off(0);
@@ -44,6 +46,5 @@ void check_error(int estado){
 		while(1){};
 	}
 }
-
 
 #endif /* RUNTIME_ERRORS_H_ */

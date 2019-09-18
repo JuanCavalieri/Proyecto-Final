@@ -4,8 +4,8 @@
  *  Created on: 20/05/2018
  *      Author: JuaniPC
  */
-#include "DSK6713_AIC23.h"	//codec-DSK support file
-#include "dsk6713.h"		//DSK support file
+#include "DSK6713_AIC23.h"
+#include "dsk6713.h"
 #include "Codec_Config.h"
 #include "MCBSP1_to_Codec_Config.h"
 #include "MCBSP0_to_SPI_Config.h"
@@ -13,10 +13,10 @@
 #include "Timer_Config.h"
 #include "Inicializaciones.h"
 
-DSK6713_AIC23_CodecHandle hAIC23_handle; //Handler para el Codec
-MCBSP_Handle SPI_Handler; //Handler para la configuracion del MCBSP0 como SPI
-MCBSP_Handle GPIO_Handler; //Handler para la configuracion del MCBSP1 como GPIO
-TIMER_Handle Timer_Handler; //Handler para el Timer
+DSK6713_AIC23_CodecHandle hAIC23_handle; 	//Handler para el Codec
+MCBSP_Handle SPI_Handler; 					//Handler para la configuracion del MCBSP0 como SPI
+MCBSP_Handle GPIO_Handler; 					//Handler para la configuracion del MCBSP1 como GPIO
+TIMER_Handle Timer_Handler; 				//Handler para el Timer
 
 Uint32 CodecEventId, TimerEventId, SPIEventId; //ID de eventos para las interrupciones
 

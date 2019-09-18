@@ -14,6 +14,8 @@
 #define ON 1  //Constantes para arrancar o frenar
 #define OFF 0 //la reproduccion en el codec
 
+/* --------- Funciones implementadas --------- */
+
 void Codec_out(short sample);
 unsigned int Codec_in(void);
 void Play_codec(unsigned char estado);

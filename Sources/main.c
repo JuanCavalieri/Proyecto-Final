@@ -21,14 +21,17 @@ Complex twiddles[MUESTRAS/2];
 
 //-------------- Variables auxiliares ---------------
 
-volatile unsigned int cuentas = 0;
-int puls_levantados = 1;
-int modo_anterior = 0;
-int reproduciendo = 0;
-int grabo_ruido = 0;
-int n_medicion = 0;
-int estado = 0;
-int j = 0;
+volatile unsigned int cuentas = 0;	// Lleva las cuentas del timer
+int puls_levantados = 1;			// Indica si todos los pulsadores de la placa estan levantados (1), caso contrario (0)
+int modo_anterior = 0;				// Indica en cual de los 4 modos de funcionamiento se encontraba el programa anteriormente
+int reproduciendo = 0;				// Indica si el codec esta reproduciendo (1) o no (0)
+int grabo_ruido = 0;				// Indica si el algoritmo esta grabando el ruido ambiente (1) o no (0)
+int n_medicion = 0;					//
+int estado = 0;						// Indica el estado actual del programa, si es distinto de 0 hubo algun error
+int j = 0;							// Variable auxiliar para un loop for
+
+float rms_ambiente;					// Valor rms del ruido ambiente
+float rms_signal;					// Valor rms del ruido ambiente mas la señal de exitacion
 
 extern union{
 	Uint32 sample;
@@ -59,7 +62,7 @@ void main(){
 
 	while(1) {
 
-		//---------- Modo 1 --------------------------------
+		//---------- Modo 1: Correccion de la respuesta en frecuencia del sistema ---------------------------------------------------
 		if(!DSK6713_DIP_get(0) && puls_levantados){
 			Codec_init();
 			Vectores_reset(sweep_ptr, left_ch_ptr, right_ch_ptr, true, true, true);
@@ -68,13 +71,14 @@ void main(){
 			Play_codec(ON);
 			while(reproduciendo){};
 
+			Promediar(left_ch_ptr, right_ch_ptr);
 			Corregir_RespFrec(sweep_ptr, left_ch_ptr, twiddles);
 
 			puls_levantados = 0;
 			modo_anterior = 1;
 		}
 
-		//---------- Modo 2 --------------------------------
+		//---------- Modo 2: Medicion del ruido ambiente y correccion de la amplitud de la exitacion --------------------------------
 		if(!DSK6713_DIP_get(1) && puls_levantados){
 			if(modo_anterior == 0 || modo_anterior == 2 || modo_anterior == 3){
 				Vectores_reset(sweep_ptr, left_ch_ptr, right_ch_ptr, false, true, true);
@@ -90,18 +94,22 @@ void main(){
 			Play_codec(ON);
 			while(reproduciendo){};
 			grabo_ruido = 0;
-			//Medir_ruido();
+
+			Promediar(left_ch_ptr, right_ch_ptr);
+			//rms_ambiente = Medir_rms(left_ch_ptr, twiddles);
 
 			Play_codec(ON);
 			while(reproduciendo){};
-			//Medir_rms_del_sweep();
+
+			Promediar(left_ch_ptr, right_ch_ptr);
+			//rms_signal = Medir_rms(left_ch_ptr, twiddles);
 			//Ajustar_nivel_del_sweep();
 
 			puls_levantados = 0;
 			modo_anterior = 2;
 		}
 
-		//---------- Modo 3 --------------------------------
+		//---------- Modo 3: Obtencion de la respuesta al impulso del recinto ------------------------------------------------------
 		if(!DSK6713_DIP_get(2) && puls_levantados){
 			if(modo_anterior == 0 || modo_anterior == 2 || modo_anterior == 3){
 				Vectores_reset(sweep_ptr, left_ch_ptr, right_ch_ptr, false, true, true);
@@ -121,7 +129,7 @@ void main(){
 			modo_anterior = 3;
 		}
 
-		//---------- Modo 4 --------------------------------
+		//---------- Modo 4: Guardado en la tarjeta de memoria ----------------------------------------------------------
 		if(!DSK6713_DIP_get(3) && puls_levantados){
 			SD_init();
 			if(modo_anterior == 1){
@@ -159,6 +167,8 @@ interrupt void c_int11(){
 
 		j++;
 	}else{
+		left_ch.muestras_utiles = j;
+		right_ch.muestras_utiles = j;
 		j = 0;
 		Play_codec(OFF);
 	}

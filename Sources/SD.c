@@ -9,9 +9,7 @@
 #include "ff.h"
 #include "SD.h"
 
-//------------ Union para el encabezado del archivo .WAV -----------------------------
-
-union{
+union{	// Union para el encabezado del archivo .WAV
 	char Header[44];
 	struct WAVFile{
 		unsigned int ChunkID;			//Escribe 'RIFF' (BE)
@@ -32,7 +30,7 @@ union{
 	} WAVFile;
 }WavHeader;
 
-union{
+union{	// Union auxiliar para cargar la respuesta al impulso en la SD
 	short data[2];
 	struct channels{
 		short right;
@@ -42,11 +40,20 @@ union{
 
 int Load_sweep(Vector *sweep){
 
+	/* Carga, desde la tarjeta SD, el sweep corregido por el algoritmo de
+	 * correccion de respuesta en frecuencia y lo almacena en el vector sweep.
+	 *
+	 * Args:
+	 * 		*sweep: Puntero al vector donde se cargara la señal del sweep corregido.
+	 * Return:
+	 * 		int indicando si hubo algun error durante la carga. Si no hubo errores devulve 0.
+	 * */
+
 	FATFS FatFs;
 	FILINFO fno;
 	FIL Fil;
 	UINT bytes;
-	unsigned int i, cant_samples;
+	unsigned int i;
 	short sample = 0;
 
 	if(f_stat("sweep_corregido.wav", &fno) == FR_NO_FILE) //Chequear que funcione con el nombre en minuscula
@@ -60,9 +67,9 @@ int Load_sweep(Vector *sweep){
 	if(f_read(&Fil, WavHeader.Header, 44, &bytes) != FR_OK)
 		return 2;
 
-	cant_samples = WavHeader.WAVFile.SubChunk2Size / (WavHeader.WAVFile.NumChannels * WavHeader.WAVFile.BitsPerSample / 8);
+	sweep->muestras_utiles = WavHeader.WAVFile.SubChunk2Size / (WavHeader.WAVFile.NumChannels * WavHeader.WAVFile.BitsPerSample / 8);
 
-	for(i = 0; i < cant_samples; i++){
+	for(i = 0; i < sweep->muestras_utiles; i++){
 
 		if(f_read(&Fil, &sample, 2, &bytes) != FR_OK)
 			return 2;
@@ -75,6 +82,15 @@ int Load_sweep(Vector *sweep){
 }
 
 int Save_sweep(Vector *sweep){
+
+	/* Guarda, en la tarjeta SD, el sweep corregido por el algoritmo
+	 * de correccion de la respuesta en frecuencia del recinto.
+	 *
+	 * Args:
+	 * 		*sweep: Puntero al vector de la señal a guardar en la SD.
+	 * Return:
+	 * 		int indicando si hubo algun error durante el guardado. Si no hubo errores devulve 0.
+	 * */
 
 	FATFS FatFs;
 	FILINFO fno;
@@ -127,6 +143,15 @@ int Save_sweep(Vector *sweep){
 }
 
 int Save_RI(Vector *left_ch, Vector *right_ch, int n_medicion){
+
+	/* Guarda la respuesta al impulso obtenida por el algoritmo en la tarjeta SD.
+	 *
+	 * Args:
+	 * 		*left_ch, *right_ch: Punteros a los vectores con los canales izq y der de la señal a guardar.
+	 * 		n_medicion: Entero indicando el numero de medicion realizada en el mismo recinto para dar nombre al archivo WAV.
+	 * Return:
+	 * 		int indicando si hubo algun error durante el guardado. Si no hubo errores devuelve 0.
+	 * */
 
 	FATFS FatFs;
 	FIL Fil;
