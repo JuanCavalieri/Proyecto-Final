@@ -28,18 +28,20 @@ typedef struct{		// Estructura que define un vector de señal
 
 /* --------- Funciones implementadas --------- */
 
-void Vectores_reset(Vector *sweep, Vector *left_ch, Vector *right_ch, bool sweep_rst, bool left_ch_rst, bool right_ch_rst);
+void Vectores_reset(int cant, ... );
 void Twiddle_init(Complex *twiddles);
 void _normalize(Vector *signal);
 void _bit_reversal(Vector *signal, unsigned int lenght);
 static inline void swap(unsigned int forward, unsigned int rev, Vector *signal);
-void fft(Vector *signal, Complex *twiddles, int lenght);
-void ifft(Vector *signal, Complex *twiddles, int lenght);
+void _fft(Vector *signal, Complex *twiddles, int lenght);
+void _ifft(Vector *signal, Complex *twiddles, int lenght);
 void Generate_sweep(Vector *signal);
-void Promediar(Vector *record_lft, Vector *record_rgt);
-void Filtrar(Vector *signal, Vector *filtro);
-float Valor_rms(Vector *signal, int length);
-void Corregir_RespFrec(Vector *signal, Vector *record, Complex *twiddles);
+void _promediar(Vector *record_lft, Vector *record_rgt);
+void _filtrar(Vector *signal, Vector *filtro);
+float _valor_rms(Vector *signal, int length);
+void Medir_RmsAmbiente(Vector *left_ch, Vector *right_ch, Complex *twiddles, float *max_rms, int *num_filtro);
+void Ajustar_Sweep(Vector *sweep, Vector *left_ch, Vector *right_ch, Complex *twiddles, float rms_ambiente, int num_filtro);
+void Corregir_RespFrec(Vector *signal, Vector *record, Vector *aux, Complex *twiddles);
 void Obtener_RI(Vector *sweep, Vector *left_ch, Vector *right_ch, Complex *twiddles);
 
 #endif /* RESP_IMPULSO_H_ */

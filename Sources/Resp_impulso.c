@@ -4,8 +4,10 @@
  *  Created on: 04/01/2019
  *      Author: Juani
  */
+#include <stdarg.h>
 #include "math.h"
 #include "Resp_impulso.h"
+#include "filtros.h"
 
 #define FS 44100.0 				// Frecuencia de muestreo de las señales de audio [Hz]
 #define DURACION_SWEEP 5.0 		// Tiempo de duracion de la señal de exitacion [s]
@@ -27,33 +29,32 @@ Vector *right_ch_ptr = &right_ch;
 Complex twiddles[MUESTRAS/2];
 */
 
-void Vectores_reset(Vector *sweep, Vector *left_ch, Vector *right_ch, bool sweep_rst, bool left_ch_rst, bool right_ch_rst){
+void Vectores_reset(int cant, ... ){
 
-	/* Permite resetear los valores de todas las componentes de los vectores de señal.
+	/* Permite resetear los valores de todas las componentes de los vectores de señal que se pasan como argumentos.
 	 *
 	 * Args:
-	 * 		*sweep, *left_ch, *right_ch: Punteros a los vectores de señales
-	 * 		sweep_rst, left_ch_rst, right_ch_rst: Booleanos indicando si se debe resetear el vector correspondiente a cada uno
+	 * 		cant: Cantidad de vectores que se desean resetear
+	 * 		El resto de parametros son los punteros a los vectores que se desean resetear
 	 * */
 
 	int i;
+	Vector *vector;
+	va_list pa;
 
-	for(i = 0; i < MUESTRAS; i++){
+	va_start(pa, cant);
 
-		if(sweep_rst){
-			sweep->samples[i].real = 0;
-			sweep->samples[i].imag = 0;
-		}
-		if(left_ch_rst){
-			left_ch->samples[i].real = 0;
-			left_ch->samples[i].imag = 0;
-		}
-		if(right_ch_rst){
-			right_ch->samples[i].real = 0;
-			right_ch->samples[i].imag = 0;
-		}
+	while(cant--){
 
+		vector = va_arg(pa, Vector*);
+	    for(i = 0; i < MUESTRAS; i++){
+
+	    	vector->samples[i].real = 0.0;
+	        vector->samples[i].imag = 0.0;
+	    }
 	}
+
+	va_end(pa);
 }
 
 void Twiddle_init(Complex *twiddles){
@@ -151,7 +152,7 @@ static inline void _swap(unsigned int forward, unsigned int rev, Vector *signal)
     signal->samples[rev].imag = temp;
 }
 
-void fft(Vector *signal, Complex *twiddles, int lenght){
+void _fft(Vector *signal, Complex *twiddles, int lenght){
 
 	/* Realiza la fft (Fast Fourier Transform) de longitud length sobre la señal en signal en dominio tiempo.
 	 * Almacena el resultado, en dominio frecuencial, en el mismo vector signal. La funcion presupone que el
@@ -196,7 +197,7 @@ void fft(Vector *signal, Complex *twiddles, int lenght){
     _bit_reversal(signal, lenght);
 }
 
-void ifft(Vector *signal, Complex *twiddles, int lenght){
+void _ifft(Vector *signal, Complex *twiddles, int lenght){
 
 	/* Realiza la ifft (Inverse Fast Fourier Transform) de longitud length sobre la señal en signal en dominio frecuencial.
 	 * Almacena el resultado, en dominio tiempo, en el mismo vector signal. La funcion presupone que el
@@ -277,7 +278,7 @@ void Generate_sweep(Vector *signal){
 	signal->muestras_utiles = MUESTRAS_SWEEP - 1;
 }
 
-void Promediar(Vector *record_lft, Vector *record_rgt){
+void _promediar(Vector *record_lft, Vector *record_rgt){
 
 	/* Realiza un promedio entre las muestras de las señales grabadas en toma estereo.
 	 * Almacena el resultado en el primer vector pasado como argumento.
@@ -294,7 +295,7 @@ void Promediar(Vector *record_lft, Vector *record_rgt){
 	}
 }
 
-void Filtrar(Vector *signal, Vector *filtro){
+void _filtrar(Vector *signal, Vector *filtro){
 
 	/* Realiza el filtrado entre la señal en signal y el filtro. El mismo se realiza en
 	 * dominio frecuencial, por lo que ambos vectores deben contener los espectros de las
@@ -316,7 +317,7 @@ void Filtrar(Vector *signal, Vector *filtro){
 	}
 }
 
-float Valor_rms(Vector *signal, int length){
+float _valor_rms(Vector *signal, int length){
 
 	/* Calcula el valor rms de la señal en el vector signal. El valor length indica hasta
 	 * que componente del vector se toma la señal para calcular su valor rms.
@@ -340,7 +341,47 @@ float Valor_rms(Vector *signal, int length){
 	return aux;
 }
 
-void Corregir_RespFrec(Vector *signal, Vector *record, Complex *twiddles){
+void Medir_RmsAmbiente(Vector *left_ch, Vector *right_ch, Complex *twiddles, float *max_rms, int *num_filtro){
+
+	int i, j, cant_filtros, long_filtros;
+	float rms_ruido;
+
+	_promediar(left_ch, right_ch);		// Promedio los canales estereo para trabajar en mono
+	_fft(left_ch, twiddles, MUESTRAS);	// Hago la fft del ruido ambiente
+
+	cant_filtros = sizeof(filtros) / sizeof(filtros[0]);
+	long_filtros = sizeof(filtros[0]) / sizeof(filtros[0][0]);
+
+	for(i = 0; i < cant_filtros; i++){
+
+		Vectores_reset(1, right_ch);
+
+		for(j = 0; j < long_filtros; j++){
+
+			right_ch->samples[j].real = filtros[i][j];
+		}
+
+		_fft(right_ch, twiddles, MUESTRAS);
+		_filtrar(left_ch, right_ch, MUESTRAS);
+		_ifft(right_ch, twiddles, MUESTRAS);
+
+		rms_ruido = _valor_rms(right_ch, MUESTRAS_SWEEP);
+		if(rms_ruido > max_rms){
+			max_rms = rms_ruido;
+			num_filtro = i;
+		}
+	}
+	Vectores_reset(2, left_ch, right_ch);
+}
+
+void Ajustar_Sweep(Vector *sweep, Vector *left_ch, Vector *right_ch, Complex *twiddles, float rms_ambiente, int num_filtro){
+
+
+}
+
+void
+
+void Corregir_RespFrec(Vector *signal, Vector *record, Vector *aux, Complex *twiddles){
 
 	/* Corrige la señal de exitacion utilizada (signal) en funcion de la respuesta en
 	 * frecuencia del sistema de sonido utilizado para las mediciones. La nueva señal
@@ -348,7 +389,8 @@ void Corregir_RespFrec(Vector *signal, Vector *record, Complex *twiddles){
 	 *
 	 * Args:
 	 * 		*signal: Puntero al vector con la señal de exitacion sin corregir.
-	 * 		*record: Puntero al vector con la señal grabada en la medicion.
+	 * 		*record: Puntero al vector con el canal izquierdo de la señal grabada en la medicion.
+	 * 		*aux: Puntero al vector con el canal derecho de la señal grabada en la medicion.
 	 * 		*twiddles: Puntero al vector con las constantes twiddles.
 	 * */
 
@@ -363,10 +405,11 @@ void Corregir_RespFrec(Vector *signal, Vector *record, Complex *twiddles){
 	double C = 0;
 	double temp = 2*PI*FS/MUESTRAS;
 
+	_promediar(record, aux);
 
 	// Obtengo el espectro del sweep y de la grabacion
-	fft(signal, twiddles, MUESTRAS);
-	fft(record, twiddles, MUESTRAS);
+	_fft(signal, twiddles, MUESTRAS);
+	_fft(record, twiddles, MUESTRAS);
 
 	// Obtengo el espectro del sweep a sintetizar (en veces) y calculo el valor de la energia para la constante C
 	for(i = 0; i < MUESTRAS; i++){
@@ -402,7 +445,7 @@ void Corregir_RespFrec(Vector *signal, Vector *record, Complex *twiddles){
 	}
 
 	// Paso el barrido a dominio temporal. De este vector hay que reproducir unicamente las muestras que ocupen el sweep
-	ifft(signal, twiddles, MUESTRAS);
+	_ifft(signal, twiddles, MUESTRAS);
 
 	// Ajusto el nivel del sweep
 	for(i = 0; i < MUESTRAS; i++){
@@ -429,9 +472,9 @@ void Obtener_RI(Vector *sweep, Vector *left_ch, Vector *right_ch, Complex *twidd
 	int i;
 	float denominador, tempLeft, tempRight;
 
-	fft(sweep, twiddles, MUESTRAS);
-	fft(left_ch, twiddles, MUESTRAS);
-	fft(right_ch, twiddles, MUESTRAS);
+	_fft(sweep, twiddles, MUESTRAS);
+	_fft(left_ch, twiddles, MUESTRAS);
+	_fft(right_ch, twiddles, MUESTRAS);
 
 	for(i = 0; i < MUESTRAS; i++){
 
@@ -446,7 +489,7 @@ void Obtener_RI(Vector *sweep, Vector *left_ch, Vector *right_ch, Complex *twidd
 		right_ch->samples[i].imag = (right_ch->samples[i].imag * sweep->samples[i].real - tempRight * sweep->samples[i].imag) / denominador;
 	}
 
-	ifft(sweep, twiddles, MUESTRAS);
-	ifft(left_ch, twiddles, MUESTRAS);
-	ifft(right_ch, twiddles, MUESTRAS);
+	_ifft(sweep, twiddles, MUESTRAS);
+	_ifft(left_ch, twiddles, MUESTRAS);
+	_ifft(right_ch, twiddles, MUESTRAS);
 }

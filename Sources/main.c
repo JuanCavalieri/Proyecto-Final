@@ -26,12 +26,12 @@ int puls_levantados = 1;			// Indica si todos los pulsadores de la placa estan l
 int modo_anterior = 0;				// Indica en cual de los 4 modos de funcionamiento se encontraba el programa anteriormente
 int reproduciendo = 0;				// Indica si el codec esta reproduciendo (1) o no (0)
 int grabo_ruido = 0;				// Indica si el algoritmo esta grabando el ruido ambiente (1) o no (0)
-int n_medicion = 0;					//
+int num_medicion = 0;				// Indica el numero de medicion de la RI realizada
+int num_filtro = 0;					// Indica el numero de filtro con el que se obtiene el maximo nivel de ruido ambiente
 int estado = 0;						// Indica el estado actual del programa, si es distinto de 0 hubo algun error
 int j = 0;							// Variable auxiliar para un loop for
 
-float rms_ambiente;					// Valor rms del ruido ambiente
-float rms_signal;					// Valor rms del ruido ambiente mas la señal de exitacion
+float rms_ambiente = 0.0;					// Valor rms del ruido ambiente
 
 extern union{
 	Uint32 sample;
@@ -49,7 +49,7 @@ void main(){
 	Timer_init();
 	Interrup_init();
 
-	Vectores_reset(sweep_ptr, left_ch_ptr, right_ch_ptr, true, true, true);
+	Vectores_reset(3, sweep_ptr, left_ch_ptr, right_ch_ptr);
 	Twiddle_init(twiddles);
 
 	//-------------- Cargar Sweep desde la SD -----------
@@ -65,14 +65,13 @@ void main(){
 		//---------- Modo 1: Correccion de la respuesta en frecuencia del sistema ---------------------------------------------------
 		if(!DSK6713_DIP_get(0) && puls_levantados){
 			Codec_init();
-			Vectores_reset(sweep_ptr, left_ch_ptr, right_ch_ptr, true, true, true);
+			Vectores_reset(3, sweep_ptr, left_ch_ptr, right_ch_ptr);
 			Generate_sweep(sweep_ptr);
 
 			Play_codec(ON);
 			while(reproduciendo){};
 
-			Promediar(left_ch_ptr, right_ch_ptr);
-			Corregir_RespFrec(sweep_ptr, left_ch_ptr, twiddles);
+			Corregir_RespFrec(sweep_ptr, left_ch_ptr, right_ch_ptr, twiddles);
 
 			puls_levantados = 0;
 			modo_anterior = 1;
@@ -81,9 +80,9 @@ void main(){
 		//---------- Modo 2: Medicion del ruido ambiente y correccion de la amplitud de la exitacion --------------------------------
 		if(!DSK6713_DIP_get(1) && puls_levantados){
 			if(modo_anterior == 0 || modo_anterior == 2 || modo_anterior == 3){
-				Vectores_reset(sweep_ptr, left_ch_ptr, right_ch_ptr, false, true, true);
+				Vectores_reset(2, left_ch_ptr, right_ch_ptr);
 			}else{
-				Vectores_reset(sweep_ptr, left_ch_ptr, right_ch_ptr, true, true, true);
+				Vectores_reset(3, sweep_ptr, left_ch_ptr, right_ch_ptr);
 				SD_init();
 				estado = Load_sweep(sweep_ptr);
 				check_error(estado);
@@ -95,8 +94,7 @@ void main(){
 			while(reproduciendo){};
 			grabo_ruido = 0;
 
-			Promediar(left_ch_ptr, right_ch_ptr);
-			//rms_ambiente = Medir_rms(left_ch_ptr, twiddles);
+			Medir_RmsAmbiente(left_ch_ptr, right_ch_ptr, twiddles, &rms_ambiente, &num_filtro);
 
 			Play_codec(ON);
 			while(reproduciendo){};
@@ -112,9 +110,9 @@ void main(){
 		//---------- Modo 3: Obtencion de la respuesta al impulso del recinto ------------------------------------------------------
 		if(!DSK6713_DIP_get(2) && puls_levantados){
 			if(modo_anterior == 0 || modo_anterior == 2 || modo_anterior == 3){
-				Vectores_reset(sweep_ptr, left_ch_ptr, right_ch_ptr, false, true, true);
+				Vectores_reset(2, left_ch_ptr, right_ch_ptr);
 			}else{
-				Vectores_reset(sweep_ptr, left_ch_ptr, right_ch_ptr, true, true, true);
+				Vectores_reset(3, sweep_ptr, left_ch_ptr, right_ch_ptr);
 				SD_init();
 				estado = Load_sweep(sweep_ptr);
 				check_error(estado);
@@ -138,7 +136,7 @@ void main(){
 			}
 
 			if(modo_anterior == 3){
-				estado = Save_RI(left_ch_ptr, right_ch_ptr, n_medicion); //Terminar de definir la longitud de la RI a guardar
+				estado = Save_RI(left_ch_ptr, right_ch_ptr, num_medicion); //Terminar de definir la longitud de la RI a guardar
 				check_error(estado);
 				n_medicion++;
 			}
