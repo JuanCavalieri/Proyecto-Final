@@ -343,6 +343,16 @@ float _valor_rms(Vector *signal, int length){
 
 void Medir_RmsAmbiente(Vector *left_ch, Vector *right_ch, Complex *twiddles, float *max_rms, int *num_filtro){
 
+	/* Mide el ruido ambiente de la señal estereo grabada por el sistema. Realiza un filtrado con los filtros
+	 * del archivo filtros.h y obtiene la banda de frecuencia en la cual el valor rms de la señal es mayor.
+	 *
+	 * Args:
+	 * 		*left_ch, *right_ch: Punteros a los vectores con las señales grabadas
+	 * 		*twiddles: Puntero al vector con las constantes twiddles
+	 * 		*max_rms: Puntero a la variable para almacenar el maximo valor rms obtenido
+	 * 		*num_filtro: Puntero a la variable para almacenar el numero de filtro con el cual se obtuvo el maximo rms
+	 * */
+
 	int i, j, cant_filtros, long_filtros;
 	float rms_ruido;
 
@@ -376,10 +386,57 @@ void Medir_RmsAmbiente(Vector *left_ch, Vector *right_ch, Complex *twiddles, flo
 
 void Ajustar_Sweep(Vector *sweep, Vector *left_ch, Vector *right_ch, Complex *twiddles, float rms_ambiente, int num_filtro){
 
+	/* Obtiene el valor rms de la señal de exitacion grabada y verifica que la relacion señal ruido sea mayor o igual a 60dB.
+	 * En caso de que sea menor, modifica el nivel de la señal de exitacion para lograr dicha SNR.
+	 *
+	 * Args:
+	 * 		*sweep: Puntero al vector de señal de exitacion
+	 * 		*twiddles: Puntero al vector con las constantes twiddles
+	 * 		max_rms: Valor de maximo rms de ruido ambiente obtenido previamente
+	 * 		num_filtro: Numero de filtro con el que se obtuvo el maximo rms de ruido ambiente
+	 * */
 
+	int i, long_filtro;
+	float rms_sweep, SNR, correc_db, correc_v;
+
+	long_filtros = sizeof(filtros[0]) / sizeof(filtros[0][0]);
+
+	// Obtengo espectro de sweep grabado
+	_promedir(left_ch, right_ch);
+	_fft(left_ch, twiddles, MUESTRAS);
+
+	// Cargo el filtro correspondiente en el vector right_ch
+	Vectores_reset(1, right_ch);
+
+	for(j = 0; j < long_filtros; j++){
+
+		right_ch->samples[j].real = filtros[num_filtro][j];
+	}
+
+	// Filtro la señal grabada
+	_fft(right_ch, twiddles, MUESTRAS);
+	_filtrar(left_ch, right_ch, MUESTRAS);
+	_ifft(right_ch, twiddles, MUESTRAS);
+
+	// Obtengo rms del sweep
+	rms_sweep = _valor_rms(right_ch, MUESTRAS_SWEEP);
+
+	// Calculo relacion señal-ruido SNR
+	SNR = 20.0 * log10(rms_sweep/rms_ambiente);
+
+	//Si la SNR es menor a 60dB corrijo el nivel del sweep
+	if(SNR < 60.0){
+
+		correc_dc = 60.0 - SNR;
+		correc_v = (float)pow(10.0, correc_db/20.0);
+
+		for(j = 0; j < sweep->muestras_utiles; j++){
+
+			sweep->samples[j].real *= correc_v;
+		}
+	}
 }
 
-void
 
 void Corregir_RespFrec(Vector *signal, Vector *record, Vector *aux, Complex *twiddles){
 

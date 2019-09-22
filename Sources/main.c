@@ -99,9 +99,7 @@ void main(){
 			Play_codec(ON);
 			while(reproduciendo){};
 
-			Promediar(left_ch_ptr, right_ch_ptr);
-			//rms_signal = Medir_rms(left_ch_ptr, twiddles);
-			//Ajustar_nivel_del_sweep();
+			Ajustar_Sweep(sweep_ptr, left_ch_ptr, right_ch_ptr, twiddles, rms_ambiente, num_filtro);
 
 			puls_levantados = 0;
 			modo_anterior = 2;
