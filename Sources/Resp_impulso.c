@@ -309,7 +309,7 @@ void _filtrar(Vector *signal, Vector *filtro){
 	int i;
 	float temp;
 
-	for(i = 0; i < signal->muestras_utiles; i++){
+	for(i = 0; i < MUESTRAS; i++){
 
 		temp = filtro->samples[i].real;
 		filtro->samples[i].real = signal->samples[i].real*filtro->samples[i].real - signal->samples[i].imag*filtro->samples[i].imag;
@@ -372,13 +372,13 @@ void Medir_RmsAmbiente(Vector *left_ch, Vector *right_ch, Complex *twiddles, flo
 		}
 
 		_fft(right_ch, twiddles, MUESTRAS);
-		_filtrar(left_ch, right_ch, MUESTRAS);
+		_filtrar(left_ch, right_ch);
 		_ifft(right_ch, twiddles, MUESTRAS);
 
 		rms_ruido = _valor_rms(right_ch, MUESTRAS_SWEEP);
-		if(rms_ruido > max_rms){
-			max_rms = rms_ruido;
-			num_filtro = i;
+		if(rms_ruido > *max_rms){
+			*max_rms = rms_ruido;
+			*num_filtro = i;
 		}
 	}
 	Vectores_reset(2, left_ch, right_ch);
@@ -396,26 +396,26 @@ void Ajustar_Sweep(Vector *sweep, Vector *left_ch, Vector *right_ch, Complex *tw
 	 * 		num_filtro: Numero de filtro con el que se obtuvo el maximo rms de ruido ambiente
 	 * */
 
-	int i, long_filtro;
+	int j, long_filtro;
 	float rms_sweep, SNR, correc_db, correc_v;
 
-	long_filtros = sizeof(filtros[0]) / sizeof(filtros[0][0]);
+	long_filtro = sizeof(filtros[0]) / sizeof(filtros[0][0]);
 
 	// Obtengo espectro de sweep grabado
-	_promedir(left_ch, right_ch);
+	_promediar(left_ch, right_ch);
 	_fft(left_ch, twiddles, MUESTRAS);
 
 	// Cargo el filtro correspondiente en el vector right_ch
 	Vectores_reset(1, right_ch);
 
-	for(j = 0; j < long_filtros; j++){
+	for(j = 0; j < long_filtro; j++){
 
 		right_ch->samples[j].real = filtros[num_filtro][j];
 	}
 
 	// Filtro la señal grabada
 	_fft(right_ch, twiddles, MUESTRAS);
-	_filtrar(left_ch, right_ch, MUESTRAS);
+	_filtrar(left_ch, right_ch);
 	_ifft(right_ch, twiddles, MUESTRAS);
 
 	// Obtengo rms del sweep
@@ -427,7 +427,7 @@ void Ajustar_Sweep(Vector *sweep, Vector *left_ch, Vector *right_ch, Complex *tw
 	//Si la SNR es menor a 60dB corrijo el nivel del sweep
 	if(SNR < 60.0){
 
-		correc_dc = 60.0 - SNR;
+		correc_db = 60.0 - SNR;
 		correc_v = (float)pow(10.0, correc_db/20.0);
 
 		for(j = 0; j < sweep->muestras_utiles; j++){

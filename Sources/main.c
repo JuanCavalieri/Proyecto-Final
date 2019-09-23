@@ -136,7 +136,7 @@ void main(){
 			if(modo_anterior == 3){
 				estado = Save_RI(left_ch_ptr, right_ch_ptr, num_medicion); //Terminar de definir la longitud de la RI a guardar
 				check_error(estado);
-				n_medicion++;
+				num_medicion++;
 			}
 
 			puls_levantados = 0;

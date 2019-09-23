@@ -32,7 +32,7 @@ void Vectores_reset(int cant, ... );
 void Twiddle_init(Complex *twiddles);
 void _normalize(Vector *signal);
 void _bit_reversal(Vector *signal, unsigned int lenght);
-static inline void swap(unsigned int forward, unsigned int rev, Vector *signal);
+static inline void _swap(unsigned int forward, unsigned int rev, Vector *signal);
 void _fft(Vector *signal, Complex *twiddles, int lenght);
 void _ifft(Vector *signal, Complex *twiddles, int lenght);
 void Generate_sweep(Vector *signal);
