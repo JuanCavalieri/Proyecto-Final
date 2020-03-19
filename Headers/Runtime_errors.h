@@ -47,4 +47,19 @@ void check_error(int estado){
 	}
 }
 
+void leds_warning(int estado){
+
+	if(estado == 1){
+		DSK6713_LED_on(0);
+		DSK6713_LED_on(1);
+		DSK6713_LED_on(2);
+		DSK6713_LED_on(3);
+	}else{
+		DSK6713_LED_off(0);
+		DSK6713_LED_off(1);
+		DSK6713_LED_off(2);
+		DSK6713_LED_off(3);
+	}
+}
+
 #endif /* RUNTIME_ERRORS_H_ */

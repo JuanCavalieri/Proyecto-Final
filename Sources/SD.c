@@ -56,12 +56,12 @@ int Load_sweep(Vector *sweep){
 	unsigned int i;
 	short sample = 0;
 
-	if(f_stat("sweep_corregido.wav", &fno) == FR_NO_FILE) //Chequear que funcione con el nombre en minuscula
-		return 1;
+	//if(f_stat("SWEC.WAV", &fno) != FR_OK) //Chequear que funcione con el nombre en minuscula
+	//	return 1;
 
 	f_mount(&FatFs, "", 0);
 
-	if(f_open(&Fil, "sweep_corregido.wav", FA_READ | FA_OPEN_ALWAYS) != FR_OK)
+	if(f_open(&Fil, "SWEC.WAV", FA_READ | FA_OPEN_ALWAYS) != FR_OK)
 		return 2;
 
 	if(f_read(&Fil, WavHeader.Header, 44, &bytes) != FR_OK)
@@ -81,7 +81,7 @@ int Load_sweep(Vector *sweep){
 	return 0;
 }
 
-int Save_sweep(Vector *sweep){
+int Save_sweep(Vector *sweep, char *nombre){
 
 	/* Guarda, en la tarjeta SD, el sweep corregido por el algoritmo
 	 * de correccion de la respuesta en frecuencia del recinto.
@@ -94,6 +94,7 @@ int Save_sweep(Vector *sweep){
 
 	FATFS FatFs;
 	FILINFO fno;
+	FRESULT result;
 	FIL Fil;
 	UINT bytes;
 	unsigned int i, size;
@@ -117,15 +118,18 @@ int Save_sweep(Vector *sweep){
 	WavHeader.WAVFile.SubChunk2ID = 0x61746164;
 	WavHeader.WAVFile.SubChunk2Size = size;
 
+	/*
 	if(f_stat("sweep_corregido.wav", &fno) != FR_OK){
 		return 3;
 	}else{if(f_unlink("sweep_corregido.wav") != FR_OK)
 		return 3;
 	}
+	*/
+	result = f_unlink(nombre);
 
 	f_mount(&FatFs, "", 0);
 
-	if(f_open(&Fil, "sweep_corregido.wav", FA_WRITE | FA_OPEN_ALWAYS) != FR_OK)
+	if(f_open(&Fil, nombre, FA_WRITE | FA_OPEN_ALWAYS) != FR_OK)
 		return 3;
 
 	if(f_write(&Fil, &WavHeader.Header, 44, &bytes) != FR_OK)
@@ -133,7 +137,7 @@ int Save_sweep(Vector *sweep){
 
 	for(i = 0; i < sweep->muestras_utiles; i++){
 
-		sample = CONST_CONVER * (short)sweep->samples[i].real;
+		sample = (short)(CONST_CONVER * sweep->samples[i].real);
 		if(f_write(&Fil, &sample, 2, &bytes) != FR_OK)
 			return 3;
 	}
@@ -181,10 +185,10 @@ int Save_RI(Vector *left_ch, Vector *right_ch, int n_medicion){
 
 	f_mount(&FatFs, "", 0);
 	if(f_open(&Fil, nombre, FA_WRITE | FA_OPEN_ALWAYS) != FR_OK)
-		return 4;
+		return 3;
 
 	if(f_write(&Fil, &WavHeader.Header, 44, &bytes) != FR_OK)
-		return 4;
+		return 3;
 
 	if(left_ch->muestras_utiles > right_ch->muestras_utiles)
 		cant_samples = left_ch->muestras_utiles;
@@ -193,10 +197,10 @@ int Save_RI(Vector *left_ch, Vector *right_ch, int n_medicion){
 
 	for(i = 0; i < cant_samples; i++){
 
-		Sample.channels.left = CONST_CONVER * (short)left_ch->samples[i].real;
-		Sample.channels.right = CONST_CONVER * (short)right_ch->samples[i].real;
+		Sample.channels.left = (short)(CONST_CONVER * left_ch->samples[i].real);
+		Sample.channels.right = (short)(CONST_CONVER * right_ch->samples[i].real);
 		if(f_write(&Fil, &Sample.data, 4, &bytes) != FR_OK)
-			return 4;
+			return 3;
 	}
 
 	f_close(&Fil);

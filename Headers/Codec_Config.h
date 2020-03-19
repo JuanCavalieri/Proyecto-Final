@@ -9,6 +9,7 @@
 #define CODEC_CONFIG_H_
 
 #define DSK6713_AIC23_INPUT_LINE 0x0011
+#define DSK6713_AIC23_INPUT_MIC 0x0014
 
 DSK6713_AIC23_Config Codec_Config = { \
     0x0017, /* Set-Up Reg 0       Left line input channel volume control */  \

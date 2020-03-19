@@ -24,14 +24,18 @@ Complex twiddles[MUESTRAS/2];
 volatile unsigned int cuentas = 0;	// Lleva las cuentas del timer
 int puls_levantados = 1;			// Indica si todos los pulsadores de la placa estan levantados (1), caso contrario (0)
 int modo_anterior = 0;				// Indica en cual de los 4 modos de funcionamiento se encontraba el programa anteriormente
-int reproduciendo = 0;				// Indica si el codec esta reproduciendo (1) o no (0)
+volatile unsigned int reproduciendo = 0;				// Indica si el codec esta reproduciendo (1) o no (0)
 int grabo_ruido = 0;				// Indica si el algoritmo esta grabando el ruido ambiente (1) o no (0)
 int num_medicion = 0;				// Indica el numero de medicion de la RI realizada
-int num_filtro = 0;					// Indica el numero de filtro con el que se obtiene el maximo nivel de ruido ambiente
 int estado = 0;						// Indica el estado actual del programa, si es distinto de 0 hubo algun error
 int j = 0;							// Variable auxiliar para un loop for
+int i = 0;
 
-float rms_ambiente = 0.0;					// Valor rms del ruido ambiente
+float rms_ambiente[7] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};	// Valor rms del ruido ambiente
+float rms_grabacion[7] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+int num_filtro;
+
+double correc_db = 0.0;
 
 extern union{
 	Uint32 sample;
@@ -47,16 +51,17 @@ void main(){
 	DSK6713_DIP_init();
 	DSK6713_LED_init();
 	Timer_init();
-	Interrup_init();
 
 	Vectores_reset(3, sweep_ptr, left_ch_ptr, right_ch_ptr);
 	Twiddle_init(twiddles);
 
 	//-------------- Cargar Sweep desde la SD -----------
 
-	SD_init();
-	estado = Load_sweep(sweep_ptr);
-	check_error(estado);
+	SD_open();
+	//estado = Load_sweep(sweep_ptr);
+	//check_error(estado);
+	Generate_sweep(sweep_ptr);
+	SD_close();
 
 	//-------------- Bucle infinito ------------------------
 
@@ -64,15 +69,25 @@ void main(){
 
 		//---------- Modo 1: Correccion de la respuesta en frecuencia del sistema ---------------------------------------------------
 		if(!DSK6713_DIP_get(0) && puls_levantados){
-			Codec_init();
+			leds_warning(ON);
 			Vectores_reset(3, sweep_ptr, left_ch_ptr, right_ch_ptr);
 			Generate_sweep(sweep_ptr);
+			SD_open();
+			estado = Save_sweep(sweep_ptr, "SWE.WAV");
+			SD_close();
+			Codec_open();
 
 			Play_codec(ON);
-			while(reproduciendo){};
+			while(reproduciendo);
+			Codec_close();
+
+			SD_open();
+			estado = Save_RI(left_ch_ptr, right_ch_ptr, 0);
+			SD_close();
 
 			Corregir_RespFrec(sweep_ptr, left_ch_ptr, right_ch_ptr, twiddles);
 
+			leds_warning(OFF);
 			puls_levantados = 0;
 			modo_anterior = 1;
 		}
@@ -81,26 +96,48 @@ void main(){
 		if(!DSK6713_DIP_get(1) && puls_levantados){
 			if(modo_anterior == 0 || modo_anterior == 2 || modo_anterior == 3){
 				Vectores_reset(2, left_ch_ptr, right_ch_ptr);
+				//SD_open();
+				//estado = Save_sweep(sweep_ptr, "SWE.WAV");
+				//SD_close();
 			}else{
 				Vectores_reset(3, sweep_ptr, left_ch_ptr, right_ch_ptr);
-				SD_init();
+				SD_open();
 				estado = Load_sweep(sweep_ptr);
 				check_error(estado);
+				SD_close();
 			}
-			Codec_init();
+			leds_warning(ON);
+			Codec_open();
+
 
 			grabo_ruido = 1;
 			Play_codec(ON);
-			while(reproduciendo){};
+			while(reproduciendo);
 			grabo_ruido = 0;
+			Codec_close();
 
-			Medir_RmsAmbiente(left_ch_ptr, right_ch_ptr, twiddles, &rms_ambiente, &num_filtro);
+			SD_open();
+			estado = Save_RI(left_ch_ptr, right_ch_ptr, 0);
+			SD_close();
 
+
+			Medir_RmsAmbiente(left_ch_ptr, right_ch_ptr, twiddles, rms_ambiente);
+			Vectores_reset(2, left_ch_ptr, right_ch_ptr);
+
+			Codec_open();
 			Play_codec(ON);
-			while(reproduciendo){};
+			while(reproduciendo);
+			Codec_close();
 
-			Ajustar_Sweep(sweep_ptr, left_ch_ptr, right_ch_ptr, twiddles, rms_ambiente, num_filtro);
+			SD_open();
+			estado = Save_RI(left_ch_ptr, right_ch_ptr, 1);
+			SD_close();
 
+			Ajustar_Sweep(sweep_ptr, left_ch_ptr, right_ch_ptr, twiddles, rms_ambiente, rms_grabacion, &correc_db, &num_filtro);
+
+			Vectores_reset(2, left_ch_ptr, right_ch_ptr);
+
+			leds_warning(OFF);
 			puls_levantados = 0;
 			modo_anterior = 2;
 		}
@@ -108,28 +145,35 @@ void main(){
 		//---------- Modo 3: Obtencion de la respuesta al impulso del recinto ------------------------------------------------------
 		if(!DSK6713_DIP_get(2) && puls_levantados){
 			if(modo_anterior == 0 || modo_anterior == 2 || modo_anterior == 3){
+				Generate_sweep(sweep_ptr);
 				Vectores_reset(2, left_ch_ptr, right_ch_ptr);
 			}else{
 				Vectores_reset(3, sweep_ptr, left_ch_ptr, right_ch_ptr);
-				SD_init();
+				SD_open();
 				estado = Load_sweep(sweep_ptr);
 				check_error(estado);
+				SD_close();
 			}
-			Codec_init();
+			leds_warning(ON);
+			Codec_open();
 
 			Play_codec(ON);
-			while(reproduciendo){};
+			while(reproduciendo);
+			Codec_close();
+
 			Obtener_RI(sweep_ptr, left_ch_ptr, right_ch_ptr, twiddles); //Falta guardar la cantidad de muestras utiles en los vetores de salida
 
+			leds_warning(OFF);
 			puls_levantados = 0;
 			modo_anterior = 3;
 		}
 
 		//---------- Modo 4: Guardado en la tarjeta de memoria ----------------------------------------------------------
 		if(!DSK6713_DIP_get(3) && puls_levantados){
-			SD_init();
+			leds_warning(ON);
+			SD_open();
 			if(modo_anterior == 1){
-				estado = Save_sweep(sweep_ptr);
+				estado = Save_sweep(sweep_ptr, "SWEC.WAV");
 				check_error(estado);
 			}
 
@@ -139,6 +183,7 @@ void main(){
 				num_medicion++;
 			}
 
+			SD_close();
 			puls_levantados = 0;
 			modo_anterior = 4;
 		}
@@ -152,22 +197,30 @@ void main(){
 interrupt void c_int11(){
 	if(j < sweep.muestras_utiles){
 
-		if(grabo_ruido)
+		if(i < 6000){
 			Codec_out(0);
-		else
-			Codec_out((short)(sweep.samples[j].real * CONST_CONVER));
+			Codec_data.sample = Codec_in();
+		}else{
+			if(grabo_ruido)
+				Codec_out(0);
+			else
+				Codec_out((short)(sweep.samples[j].real * CONST_CONVER));
 
-		Codec_data.sample = Codec_in();
-		left_ch.samples[j].real = ((float)Codec_data.channel[LEFT])/CONST_CONVER;
-		right_ch.samples[j].real = ((float)Codec_data.channel[RIGHT])/CONST_CONVER;
+			Codec_data.sample = Codec_in();
+			left_ch.samples[j].real = ((float)Codec_data.channel[LEFT])/CONST_CONVER;
+			right_ch.samples[j].real = ((float)Codec_data.channel[RIGHT])/CONST_CONVER;
 
-		j++;
+			j++;
+		}
 	}else{
 		left_ch.muestras_utiles = j;
 		right_ch.muestras_utiles = j;
 		j = 0;
+		i = 0;
 		Play_codec(OFF);
 	}
+
+	i++;
 
 }
 

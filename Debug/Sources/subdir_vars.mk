@@ -9,6 +9,7 @@ C_SRCS += \
 ../Sources/Resp_impulso.c \
 ../Sources/SD.c \
 ../Sources/dsk6713.c \
+../Sources/dsk6713_aic23_closecodec.c \
 ../Sources/dsk6713_aic23_opencodec.c \
 ../Sources/dsk6713_aic23_registers.c \
 ../Sources/dsk6713_aic23_setfreq.c \
@@ -24,6 +25,7 @@ OBJS += \
 ./Sources/Resp_impulso.obj \
 ./Sources/SD.obj \
 ./Sources/dsk6713.obj \
+./Sources/dsk6713_aic23_closecodec.obj \
 ./Sources/dsk6713_aic23_opencodec.obj \
 ./Sources/dsk6713_aic23_registers.obj \
 ./Sources/dsk6713_aic23_setfreq.obj \
@@ -39,6 +41,7 @@ C_DEPS += \
 ./Sources/Resp_impulso.pp \
 ./Sources/SD.pp \
 ./Sources/dsk6713.pp \
+./Sources/dsk6713_aic23_closecodec.pp \
 ./Sources/dsk6713_aic23_opencodec.pp \
 ./Sources/dsk6713_aic23_registers.pp \
 ./Sources/dsk6713_aic23_setfreq.pp \
@@ -54,6 +57,7 @@ C_DEPS__QUOTED += \
 "Sources\Resp_impulso.pp" \
 "Sources\SD.pp" \
 "Sources\dsk6713.pp" \
+"Sources\dsk6713_aic23_closecodec.pp" \
 "Sources\dsk6713_aic23_opencodec.pp" \
 "Sources\dsk6713_aic23_registers.pp" \
 "Sources\dsk6713_aic23_setfreq.pp" \
@@ -69,6 +73,7 @@ OBJS__QUOTED += \
 "Sources\Resp_impulso.obj" \
 "Sources\SD.obj" \
 "Sources\dsk6713.obj" \
+"Sources\dsk6713_aic23_closecodec.obj" \
 "Sources\dsk6713_aic23_opencodec.obj" \
 "Sources\dsk6713_aic23_registers.obj" \
 "Sources\dsk6713_aic23_setfreq.obj" \
@@ -84,6 +89,7 @@ C_SRCS__QUOTED += \
 "../Sources/Resp_impulso.c" \
 "../Sources/SD.c" \
 "../Sources/dsk6713.c" \
+"../Sources/dsk6713_aic23_closecodec.c" \
 "../Sources/dsk6713_aic23_opencodec.c" \
 "../Sources/dsk6713_aic23_registers.c" \
 "../Sources/dsk6713_aic23_setfreq.c" \

@@ -10,7 +10,7 @@
 
 #define ARRANCAR_CODEC	Codec_out(0);
 extern Uint32 CodecEventId;
-extern int reproduciendo;
+extern volatile unsigned int reproduciendo;
 
 union{	// Union para los datos del Codec
 	Uint32 sample;

@@ -39,8 +39,8 @@ void Generate_sweep(Vector *signal);
 void _promediar(Vector *record_lft, Vector *record_rgt);
 void _filtrar(Vector *signal, Vector *filtro);
 float _valor_rms(Vector *signal, int length);
-void Medir_RmsAmbiente(Vector *left_ch, Vector *right_ch, Complex *twiddles, float *max_rms, int *num_filtro);
-void Ajustar_Sweep(Vector *sweep, Vector *left_ch, Vector *right_ch, Complex *twiddles, float rms_ambiente, int num_filtro);
+void Medir_RmsAmbiente(Vector *left_ch, Vector *right_ch, Complex *twiddles, float *rms_ambiente);
+void Ajustar_Sweep(Vector *sweep, Vector *left_ch, Vector *right_ch, Complex *twiddles, float *rms_ambiente, float *rms_grabacion, double *correc_db, int *num_filtro);
 void Corregir_RespFrec(Vector *signal, Vector *record, Vector *aux, Complex *twiddles);
 void Obtener_RI(Vector *sweep, Vector *left_ch, Vector *right_ch, Complex *twiddles);
 
