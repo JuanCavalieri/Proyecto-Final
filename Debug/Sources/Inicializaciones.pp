@@ -1,30 +1,30 @@
 # FIXED
 
-Sources/Inicializaciones.obj: ../Sources/Inicializaciones.c
-Sources/Inicializaciones.obj: C:/DSK6713/c6000/dsk6713/include/DSK6713_AIC23.h
-Sources/Inicializaciones.obj: C:/C6xCSL/include/csl.h
-Sources/Inicializaciones.obj: C:/C6xCSL/include/csl_chip.h
-Sources/Inicializaciones.obj: C:/C6xCSL/include/csl_stdinc.h
-Sources/Inicializaciones.obj: C:/C6xCSL/include/csl_stdinchal.h
-Sources/Inicializaciones.obj: C:/C6xCSL/include/tistdtypes.h
-Sources/Inicializaciones.obj: C:/C6xCSL/include/csl_chiphal.h
-Sources/Inicializaciones.obj: C:/C6xCSL/include/csl_emifhal.h
-Sources/Inicializaciones.obj: C:/C6xCSL/include/csl_chip.h
-Sources/Inicializaciones.obj: C:/C6xCSL/include/csl_irq.h
-Sources/Inicializaciones.obj: C:/C6xCSL/include/csl_irqhal.h
-Sources/Inicializaciones.obj: C:/C6xCSL/include/csl_timer.h
-Sources/Inicializaciones.obj: C:/C6xCSL/include/csl_timerhal.h
-Sources/Inicializaciones.obj: C:/C6xCSL/include/csl_mcbsp.h
-Sources/Inicializaciones.obj: C:/C6xCSL/include/csl_mcbsphal.h
-Sources/Inicializaciones.obj: C:/DSK6713/c6000/dsk6713/include/dsk6713.h
-Sources/Inicializaciones.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/Codec_Config.h
-Sources/Inicializaciones.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/MCBSP1_to_Codec_Config.h
-Sources/Inicializaciones.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/MCBSP0_to_SPI_Config.h
-Sources/Inicializaciones.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/MCBSP1_to_GPIO_Config.h
-Sources/Inicializaciones.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/Timer_Config.h
-Sources/Inicializaciones.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/Inicializaciones.h
+Sources/inicializaciones.obj: ../Sources/inicializaciones.c
+Sources/inicializaciones.obj: C:/DSK6713/c6000/dsk6713/include/DSK6713_AIC23.h
+Sources/inicializaciones.obj: C:/C6xCSL/include/csl.h
+Sources/inicializaciones.obj: C:/C6xCSL/include/csl_chip.h
+Sources/inicializaciones.obj: C:/C6xCSL/include/csl_stdinc.h
+Sources/inicializaciones.obj: C:/C6xCSL/include/csl_stdinchal.h
+Sources/inicializaciones.obj: C:/C6xCSL/include/tistdtypes.h
+Sources/inicializaciones.obj: C:/C6xCSL/include/csl_chiphal.h
+Sources/inicializaciones.obj: C:/C6xCSL/include/csl_emifhal.h
+Sources/inicializaciones.obj: C:/C6xCSL/include/csl_chip.h
+Sources/inicializaciones.obj: C:/C6xCSL/include/csl_irq.h
+Sources/inicializaciones.obj: C:/C6xCSL/include/csl_irqhal.h
+Sources/inicializaciones.obj: C:/C6xCSL/include/csl_timer.h
+Sources/inicializaciones.obj: C:/C6xCSL/include/csl_timerhal.h
+Sources/inicializaciones.obj: C:/C6xCSL/include/csl_mcbsp.h
+Sources/inicializaciones.obj: C:/C6xCSL/include/csl_mcbsphal.h
+Sources/inicializaciones.obj: C:/DSK6713/c6000/dsk6713/include/dsk6713.h
+Sources/inicializaciones.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/codec_config.h
+Sources/inicializaciones.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/mcbsp1_to_codec_config.h
+Sources/inicializaciones.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/mcbsp0_to_spi_config.h
+Sources/inicializaciones.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/mcbsp1_to_gpio_config.h
+Sources/inicializaciones.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/timer_config.h
+Sources/inicializaciones.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/inicializaciones.h
 
-../Sources/Inicializaciones.c: 
+../Sources/inicializaciones.c: 
 C:/DSK6713/c6000/dsk6713/include/DSK6713_AIC23.h: 
 C:/C6xCSL/include/csl.h: 
 C:/C6xCSL/include/csl_chip.h: 
@@ -41,9 +41,9 @@ C:/C6xCSL/include/csl_timerhal.h:
 C:/C6xCSL/include/csl_mcbsp.h: 
 C:/C6xCSL/include/csl_mcbsphal.h: 
 C:/DSK6713/c6000/dsk6713/include/dsk6713.h: 
-E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/Codec_Config.h: 
-E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/MCBSP1_to_Codec_Config.h: 
-E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/MCBSP0_to_SPI_Config.h: 
-E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/MCBSP1_to_GPIO_Config.h: 
-E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/Timer_Config.h: 
-E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/Inicializaciones.h: 
+E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/codec_config.h: 
+E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/mcbsp1_to_codec_config.h: 
+E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/mcbsp0_to_spi_config.h: 
+E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/mcbsp1_to_gpio_config.h: 
+E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/timer_config.h: 
+E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/inicializaciones.h: 

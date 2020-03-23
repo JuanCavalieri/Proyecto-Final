@@ -1,10 +1,12 @@
 #include "DSK6713_AIC23.h"
 #include "dsk6713_dip.h"
 #include "dsk6713_led.h"
-#include "Inicializaciones.h"
-#include "SD.h"
-#include "Codec.h"
-#include "Runtime_errors.h"
+#include "inicializaciones.h"
+#include "sd.h"
+#include "codec.h"
+#include "leds.h"
+
+#define DELAY 44100*1
 
 //-------------- Vectores de señales ----------------
 
@@ -13,219 +15,226 @@
 #pragma DATA_SECTION(right_ch, ".EXT_RAM")
 #pragma DATA_SECTION(twiddles, ".EXT_RAM")
 
-Vector sweep, left_ch, right_ch;
-Vector *sweep_ptr = &sweep;
-Vector *left_ch_ptr = &left_ch;
-Vector *right_ch_ptr = &right_ch;
-Complex twiddles[MUESTRAS/2];
+vector sweep, left_ch, right_ch;
+complex twiddles[MUESTRAS/2];
 
 //-------------- Variables auxiliares ---------------
 
-volatile unsigned int cuentas = 0;	// Lleva las cuentas del timer
-int puls_levantados = 1;			// Indica si todos los pulsadores de la placa estan levantados (1), caso contrario (0)
-int modo_anterior = 0;				// Indica en cual de los 4 modos de funcionamiento se encontraba el programa anteriormente
-volatile unsigned int reproduciendo = 0;				// Indica si el codec esta reproduciendo (1) o no (0)
-int grabo_ruido = 0;				// Indica si el algoritmo esta grabando el ruido ambiente (1) o no (0)
-int num_medicion = 0;				// Indica el numero de medicion de la RI realizada
-int estado = 0;						// Indica el estado actual del programa, si es distinto de 0 hubo algun error
-int j = 0;							// Variable auxiliar para un loop for
+volatile unsigned int cuentas = 0;			// Lleva las cuentas del timer
+volatile unsigned char reproduciendo = 0;	// Indica si el codec esta reproduciendo (1) o no (0)
+unsigned char puls_levantados = 1;			// Indica si todos los pulsadores de la placa estan levantados (1), caso contrario (0)
+unsigned char modo_anterior = 0;			// Indica en cual de los 4 modos de funcionamiento se encontraba el programa anteriormente
+unsigned char modo_actual = 0;				// Indica el modo actual de funcionamiento
+unsigned char num_medicion = 0;				// Indica el numero de medicion de la RI realizada
+unsigned char estado = 0;					// Indica el estado actual del programa, si es distinto de 0 hubo algun error
+int long_grabacion = 0;						// Indica la cantidad de muestras que se grabaran
+int j = 0;									// Variable auxiliar para un loop for
 int i = 0;
 
 float rms_ambiente[7] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};	// Valor rms del ruido ambiente
-float rms_grabacion[7] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-int num_filtro;
+float correc_db = 0.0;
 
-double correc_db = 0.0;
-
-extern union{
+extern union{	// Union para los datos del Codec
 	Uint32 sample;
 	short channel[2];
-} Codec_data;
+} codec_data;
 
-void main(){
-
+void main ()
+{
 	//-------------- Inicializaciones ----------------------
 
 	IRQ_globalDisable();
 	DSK6713_init();
 	DSK6713_DIP_init();
 	DSK6713_LED_init();
-	Timer_init();
+	timer_init();
 
-	Vectores_reset(3, sweep_ptr, left_ch_ptr, right_ch_ptr);
-	Twiddle_init(twiddles);
+	twiddle_init(twiddles);
 
-	//-------------- Cargar Sweep desde la SD -----------
+	//-------------- Genero el sweep -----------
 
-	SD_open();
-	//estado = Load_sweep(sweep_ptr);
-	//check_error(estado);
-	Generate_sweep(sweep_ptr);
-	SD_close();
+	vectores_reset(1, &sweep);
+	generate_sweep(&sweep);
 
 	//-------------- Bucle infinito ------------------------
 
-	while(1) {
+	while (1)
+	{
+		/*-----------------------------------------*/
+		/*                MODO 1                   */
+		/* Medicion de ruido ambiente del recinto  */
+		/*-----------------------------------------*/
 
-		//---------- Modo 1: Correccion de la respuesta en frecuencia del sistema ---------------------------------------------------
-		if(!DSK6713_DIP_get(0) && puls_levantados){
-			leds_warning(ON);
-			Vectores_reset(3, sweep_ptr, left_ch_ptr, right_ch_ptr);
-			Generate_sweep(sweep_ptr);
-			SD_open();
-			estado = Save_sweep(sweep_ptr, "SWE.WAV");
-			SD_close();
-			Codec_open();
+		if (!DSK6713_DIP_get(0) && puls_levantados)
+		{
+			leds_grabando(ON);
+			modo_actual = 1;
+			long_grabacion = sweep.muestras_utiles;
 
-			Play_codec(ON);
-			while(reproduciendo);
-			Codec_close();
+			vectores_reset(2, &left_ch, &right_ch);
 
-			SD_open();
-			estado = Save_RI(left_ch_ptr, right_ch_ptr, 0);
-			SD_close();
+			codec_open();
 
-			Corregir_RespFrec(sweep_ptr, left_ch_ptr, right_ch_ptr, twiddles);
+			play_codec(ON);
+			while (reproduciendo);
 
-			leds_warning(OFF);
+			codec_close();
+
+			leds_grabando(OFF);
+
+			medir_rms_ambiente(&left_ch, &right_ch, twiddles, rms_ambiente);
+
+			leds_modo(1);
 			puls_levantados = 0;
 			modo_anterior = 1;
 		}
 
-		//---------- Modo 2: Medicion del ruido ambiente y correccion de la amplitud de la exitacion --------------------------------
-		if(!DSK6713_DIP_get(1) && puls_levantados){
-			if(modo_anterior == 0 || modo_anterior == 2 || modo_anterior == 3){
-				Vectores_reset(2, left_ch_ptr, right_ch_ptr);
-				//SD_open();
-				//estado = Save_sweep(sweep_ptr, "SWE.WAV");
-				//SD_close();
-			}else{
-				Vectores_reset(3, sweep_ptr, left_ch_ptr, right_ch_ptr);
-				SD_open();
-				estado = Load_sweep(sweep_ptr);
-				check_error(estado);
-				SD_close();
+		/*-----------------------------------------*/
+		/*                MODO 2                   */
+		/*   Medicion y ajuste del nivel de señal  */
+		/*-----------------------------------------*/
+
+		if (!DSK6713_DIP_get(1) && puls_levantados)
+		{
+			leds_grabando(ON);
+			modo_actual = 2;
+			long_grabacion = sweep.muestras_utiles;
+
+			if (modo_anterior == 1 || modo_anterior == 3 || modo_anterior == 4)
+			{
+				generate_sweep(&sweep);
 			}
-			leds_warning(ON);
-			Codec_open();
 
+			vectores_reset(2, &left_ch, &right_ch);
 
-			grabo_ruido = 1;
-			Play_codec(ON);
-			while(reproduciendo);
-			grabo_ruido = 0;
-			Codec_close();
+			codec_open();
 
-			SD_open();
-			estado = Save_RI(left_ch_ptr, right_ch_ptr, 0);
-			SD_close();
+			play_codec(ON);
+			while (reproduciendo);
 
+			codec_close();
 
-			Medir_RmsAmbiente(left_ch_ptr, right_ch_ptr, twiddles, rms_ambiente);
-			Vectores_reset(2, left_ch_ptr, right_ch_ptr);
+			leds_grabando(OFF);
 
-			Codec_open();
-			Play_codec(ON);
-			while(reproduciendo);
-			Codec_close();
+			ajustar_sweep(&sweep, &left_ch, &right_ch, twiddles, rms_ambiente, &correc_db);
 
-			SD_open();
-			estado = Save_RI(left_ch_ptr, right_ch_ptr, 1);
-			SD_close();
-
-			Ajustar_Sweep(sweep_ptr, left_ch_ptr, right_ch_ptr, twiddles, rms_ambiente, rms_grabacion, &correc_db, &num_filtro);
-
-			Vectores_reset(2, left_ch_ptr, right_ch_ptr);
-
-			leds_warning(OFF);
+			leds_modo(2);
 			puls_levantados = 0;
 			modo_anterior = 2;
 		}
 
-		//---------- Modo 3: Obtencion de la respuesta al impulso del recinto ------------------------------------------------------
-		if(!DSK6713_DIP_get(2) && puls_levantados){
-			if(modo_anterior == 0 || modo_anterior == 2 || modo_anterior == 3){
-				Generate_sweep(sweep_ptr);
-				Vectores_reset(2, left_ch_ptr, right_ch_ptr);
-			}else{
-				Vectores_reset(3, sweep_ptr, left_ch_ptr, right_ch_ptr);
-				SD_open();
-				estado = Load_sweep(sweep_ptr);
-				check_error(estado);
-				SD_close();
+		/*-----------------------------------------*/
+		/*                MODO 3                   */
+		/*   Calculo de la respuesta al impulso    */
+		/*-----------------------------------------*/
+
+		if (!DSK6713_DIP_get(2) && puls_levantados)
+		{
+			leds_grabando(ON);
+			modo_actual = 3;
+			long_grabacion = MUESTRAS;
+
+			if (modo_anterior == 1 || modo_anterior == 4)
+			{
+				generate_sweep(&sweep);
 			}
-			leds_warning(ON);
-			Codec_open();
 
-			Play_codec(ON);
-			while(reproduciendo);
-			Codec_close();
+			vectores_reset(2, &left_ch, &right_ch);
 
-			Obtener_RI(sweep_ptr, left_ch_ptr, right_ch_ptr, twiddles); //Falta guardar la cantidad de muestras utiles en los vetores de salida
+			codec_open();
 
-			leds_warning(OFF);
+			play_codec(ON);
+			while (reproduciendo);
+
+			codec_close();
+
+			leds_grabando(OFF);
+
+			obtener_respuesta_impulso(&sweep, &left_ch, &right_ch, twiddles); //Falta guardar la cantidad de muestras utiles en los vetores de salida
+
+			leds_modo(3);
 			puls_levantados = 0;
 			modo_anterior = 3;
 		}
 
-		//---------- Modo 4: Guardado en la tarjeta de memoria ----------------------------------------------------------
-		if(!DSK6713_DIP_get(3) && puls_levantados){
-			leds_warning(ON);
-			SD_open();
-			if(modo_anterior == 1){
-				estado = Save_sweep(sweep_ptr, "SWEC.WAV");
-				check_error(estado);
-			}
+		/*-----------------------------------------*/
+		/*                MODO 4                   */
+		/*    Guardado en la tarjeta de memoria    */
+		/*-----------------------------------------*/
 
-			if(modo_anterior == 3){
-				estado = Save_RI(left_ch_ptr, right_ch_ptr, num_medicion); //Terminar de definir la longitud de la RI a guardar
+		if (!DSK6713_DIP_get(3) && puls_levantados)
+		{
+			modo_actual = 4;
+			sd_open();
+
+			if (modo_anterior == 3)
+			{
+				estado = save_respuesta_impulso(&left_ch, &right_ch, num_medicion); //Terminar de definir la longitud de la RI a guardar
 				check_error(estado);
 				num_medicion++;
 			}
 
-			SD_close();
+			sd_close();
+
+			leds_modo(4);
 			puls_levantados = 0;
 			modo_anterior = 4;
 		}
 
 		//Espera a que todos los pulsadores esten levantados para poder entrar en otro modo
-		if((DSK6713_DIP_get(0) && DSK6713_DIP_get(1) && DSK6713_DIP_get(2) && DSK6713_DIP_get(3)) == 1)
+
+		if ((DSK6713_DIP_get(0) && DSK6713_DIP_get(1) && DSK6713_DIP_get(2) && DSK6713_DIP_get(3)) == 1)
+		{
 			puls_levantados = 1;
+		}
+
 	}
 }
 
-interrupt void c_int11(){
-	if(j < sweep.muestras_utiles){
-
-		if(i < 6000){
-			Codec_out(0);
-			Codec_data.sample = Codec_in();
-		}else{
-			if(grabo_ruido)
-				Codec_out(0);
+interrupt void c_int11 ()
+{
+	if (j < long_grabacion)
+	{
+		if (i < DELAY)
+		{
+			codec_out(0);
+			codec_data.sample = codec_in();
+			i++;
+		}
+		else
+		{
+			if (modo_actual == 1)
+			{
+				codec_out(0);
+			}
 			else
-				Codec_out((short)(sweep.samples[j].real * CONST_CONVER));
+			{
+				codec_out((short)(sweep.samples[j].real * CONST_CONVER));
+			}
 
-			Codec_data.sample = Codec_in();
-			left_ch.samples[j].real = ((float)Codec_data.channel[LEFT])/CONST_CONVER;
-			right_ch.samples[j].real = ((float)Codec_data.channel[RIGHT])/CONST_CONVER;
+			codec_data.sample = codec_in();
+			left_ch.samples[j].real = ((float)codec_data.channel[LEFT])/CONST_CONVER;
+			right_ch.samples[j].real = ((float)codec_data.channel[RIGHT])/CONST_CONVER;
 
 			j++;
 		}
-	}else{
+	}
+	else
+	{
 		left_ch.muestras_utiles = j;
 		right_ch.muestras_utiles = j;
 		j = 0;
 		i = 0;
-		Play_codec(OFF);
+		play_codec(OFF);
 	}
-
-	i++;
-
 }
 
-interrupt void c_int10(){ //Interrumpe cada 1 micro segundo
+interrupt void c_int10 () //Interrumpe cada 1 micro segundo
+{
 	IRQ_clear(TimerEventId);
-	if(cuentas != 0)
+
+	if (cuentas != 0)
+	{
 		cuentas--;
+	}
 }

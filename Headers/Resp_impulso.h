@@ -8,40 +8,32 @@
 #ifndef RESP_IMPULSO_H_
 #define RESP_IMPULSO_H_
 
-#include "stdbool.h"
-
 #define MUESTRAS	524288 		// Longitud de los vectores de las señales
 #define CONST_CONVER	32767	// Constante de conversion entre float32 y int16
-#define PI	3.14159265358979
-
 
 typedef struct{		// Estructura que define un numero complejo
 	float real;
 	float imag;
-} Complex;
+} complex;
 
 typedef struct{		// Estructura que define un vector de señal
-	Complex samples[MUESTRAS];
+	complex samples[MUESTRAS];
 	int muestras_utiles;
-} Vector;
+} vector;
 
 
 /* --------- Funciones implementadas --------- */
 
-void Vectores_reset(int cant, ... );
-void Twiddle_init(Complex *twiddles);
-void _normalize(Vector *signal);
-void _bit_reversal(Vector *signal, unsigned int lenght);
-static inline void _swap(unsigned int forward, unsigned int rev, Vector *signal);
-void _fft(Vector *signal, Complex *twiddles, int lenght);
-void _ifft(Vector *signal, Complex *twiddles, int lenght);
-void Generate_sweep(Vector *signal);
-void _promediar(Vector *record_lft, Vector *record_rgt);
-void _filtrar(Vector *signal, Vector *filtro);
-float _valor_rms(Vector *signal, int length);
-void Medir_RmsAmbiente(Vector *left_ch, Vector *right_ch, Complex *twiddles, float *rms_ambiente);
-void Ajustar_Sweep(Vector *sweep, Vector *left_ch, Vector *right_ch, Complex *twiddles, float *rms_ambiente, float *rms_grabacion, double *correc_db, int *num_filtro);
-void Corregir_RespFrec(Vector *signal, Vector *record, Vector *aux, Complex *twiddles);
-void Obtener_RI(Vector *sweep, Vector *left_ch, Vector *right_ch, Complex *twiddles);
+void vectores_reset (int cant, ... );
+
+void twiddle_init (complex *twiddles);
+
+void generate_sweep (vector *signal);
+
+void medir_rms_ambiente (vector *left_ch, vector *right_ch, complex *twiddles, float *rms_ambiente);
+
+void ajustar_sweep (vector *sweep, vector *left_ch, vector *right_ch, complex *twiddles, float *rms_ambiente, float *correc_db);
+
+void obtener_respuesta_impulso (vector *sweep, vector *left_ch, vector *right_ch, complex *twiddles);
 
 #endif /* RESP_IMPULSO_H_ */

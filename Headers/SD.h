@@ -12,8 +12,6 @@
 
 /* --------- Funciones implementadas --------- */
 
-int Load_sweep(Vector *sweep);
-int Save_sweep(Vector *sweep, char *nombre);
-int Save_RI(Vector *left_ch, Vector *right_ch, int n_medicion);
+int save_respuesta_impulso (vector *left_ch, vector *right_ch, int n_medicion);
 
 #endif /* SD_H_ */

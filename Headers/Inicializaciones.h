@@ -8,18 +8,18 @@
 #ifndef INICIALIZACIONES_H_
 #define INICIALIZACIONES_H_
 
-extern DSK6713_AIC23_CodecHandle hAIC23_handle;
+//extern DSK673_AIC23_CodecHandle hAIC23_handle;
 extern TIMER_Handle Timer_Handler;
 
 extern unsigned int CodecEventId, TimerEventId, SPIEventId;
 
-void Codec_open(void);
-void Codec_close(void);
-void SD_open(void);
-void SD_close(void);
-void Timer_init(void);
-void Timer_interrup_init(void);
-void Codec_interrupt_init(void);
+void codec_open(void);
+void codec_close(void);
+void sd_open(void);
+void sd_close(void);
+void timer_init(void);
+void timer_interrup_init(void);
+void codec_interrupt_init(void);
 
 void DSK6713_LED_init(void);
 void DSK6713_DIP_init(void);

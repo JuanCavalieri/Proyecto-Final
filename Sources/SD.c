@@ -7,147 +7,43 @@
 
 #include <stdio.h>
 #include "ff.h"
-#include "SD.h"
+#include "sd.h"
 
-union{	// Union para el encabezado del archivo .WAV
-	char Header[44];
-	struct WAVFile{
-		unsigned int ChunkID;			//Escribe 'RIFF' (BE)
-		unsigned int ChunkSize; 		//=36 + SubChunk2Size  (LE)
-		unsigned int Format; 			//Escribe 'WAVE' (BE)
+union
+{	// Union para el encabezado del archivo .WAV
+	char header[44];
+	struct wav_file
+	{
+		unsigned int chunk_id;			//Escribe 'RIFF' (BE)
+		unsigned int chunk_size; 		//=36 + SubChunk2Size  (LE)
+		unsigned int format; 			//Escribe 'WAVE' (BE)
 
-		unsigned int SubChunk1ID; 		//Escribe 'fmt ' (BE)
-		unsigned int SubChunk1Size; 	//Vale 16 para PCM (LE)
-		unsigned short AudioFormat; 	//Para PCM vale 1, otros valores indican algun grado de compresion (LE)
-		unsigned short NumChannels; 	//Cantidad de canales (1 = Mono, 2 = Estereo, etc) (LE)
-		unsigned int SampleRate; 		//Frecuencia de muestreo (44100Hz = 0xAC44) (LE)
-		unsigned int ByteRate; 			//= SampleRate * NumChannels * BitsPerSample/8 (LE)
-		unsigned short BlockAlign; 		//= NumChannels * BitsPerSample/8 (LE)
-		unsigned short BitsPerSample; 	//Cantidad de bits por sample (8bits = 8, 16bits = 16, etc) (LE)
+		unsigned int sub_chunk1_id; 		//Escribe 'fmt ' (BE)
+		unsigned int sub_chunk1_size; 	//Vale 16 para PCM (LE)
+		unsigned short audio_format; 	//Para PCM vale 1, otros valores indican algun grado de compresion (LE)
+		unsigned short num_channels; 	//Cantidad de canales (1 = Mono, 2 = Estereo, etc) (LE)
+		unsigned int sample_rate; 		//Frecuencia de muestreo (44100Hz = 0xAC44) (LE)
+		unsigned int byte_rate; 			//= SampleRate * NumChannels * BitsPerSample/8 (LE)
+		unsigned short block_align; 		//= NumChannels * BitsPerSample/8 (LE)
+		unsigned short bits_per_sample; 	//Cantidad de bits por sample (8bits = 8, 16bits = 16, etc) (LE)
 
-		unsigned int SubChunk2ID; 		//Escribe 'data' (BE)
-		unsigned int SubChunk2Size; 	//= NumSamples * NumChannels * BitsPerSample/8 (LE)
-	} WAVFile;
-}WavHeader;
+		unsigned int sub_chunk2_id; 		//Escribe 'data' (BE)
+		unsigned int sub_chunk2_size; 	//= NumSamples * NumChannels * BitsPerSample/8 (LE)
+	} wav_file;
+}wav_header;
 
-union{	// Union auxiliar para cargar la respuesta al impulso en la SD
+union
+{	// Union auxiliar para cargar la respuesta al impulso en la SD
 	short data[2];
-	struct channels{
+	struct channels
+	{
 		short right;
 		short left;
 	} channels;
-}Sample;
+}sample;
 
-int Load_sweep(Vector *sweep){
-
-	/* Carga, desde la tarjeta SD, el sweep corregido por el algoritmo de
-	 * correccion de respuesta en frecuencia y lo almacena en el vector sweep.
-	 *
-	 * Args:
-	 * 		*sweep: Puntero al vector donde se cargara la señal del sweep corregido.
-	 * Return:
-	 * 		int indicando si hubo algun error durante la carga. Si no hubo errores devulve 0.
-	 * */
-
-	FATFS FatFs;
-	FILINFO fno;
-	FIL Fil;
-	UINT bytes;
-	unsigned int i;
-	short sample = 0;
-
-	//if(f_stat("SWEC.WAV", &fno) != FR_OK) //Chequear que funcione con el nombre en minuscula
-	//	return 1;
-
-	f_mount(&FatFs, "", 0);
-
-	if(f_open(&Fil, "SWEC.WAV", FA_READ | FA_OPEN_ALWAYS) != FR_OK)
-		return 2;
-
-	if(f_read(&Fil, WavHeader.Header, 44, &bytes) != FR_OK)
-		return 2;
-
-	sweep->muestras_utiles = WavHeader.WAVFile.SubChunk2Size / (WavHeader.WAVFile.NumChannels * WavHeader.WAVFile.BitsPerSample / 8);
-
-	for(i = 0; i < sweep->muestras_utiles; i++){
-
-		if(f_read(&Fil, &sample, 2, &bytes) != FR_OK)
-			return 2;
-
-		sweep->samples[i].real = ((float)sample)/CONST_CONVER;
-	}
-
-	f_close(&Fil);
-	return 0;
-}
-
-int Save_sweep(Vector *sweep, char *nombre){
-
-	/* Guarda, en la tarjeta SD, el sweep corregido por el algoritmo
-	 * de correccion de la respuesta en frecuencia del recinto.
-	 *
-	 * Args:
-	 * 		*sweep: Puntero al vector de la señal a guardar en la SD.
-	 * Return:
-	 * 		int indicando si hubo algun error durante el guardado. Si no hubo errores devulve 0.
-	 * */
-
-	FATFS FatFs;
-	FILINFO fno;
-	FRESULT result;
-	FIL Fil;
-	UINT bytes;
-	unsigned int i, size;
-	int sample = 0;
-
-	size = sweep->muestras_utiles * 2;
-
-	WavHeader.WAVFile.ChunkID = 0x46464952;
-	WavHeader.WAVFile.ChunkSize = 36 + size;
-	WavHeader.WAVFile.Format = 0x45564157;
-
-	WavHeader.WAVFile.SubChunk1ID = 0x20746d66;
-	WavHeader.WAVFile.SubChunk1Size = 0x00000010;
-	WavHeader.WAVFile.AudioFormat = 0x0001;
-	WavHeader.WAVFile.NumChannels = 0x0001;
-	WavHeader.WAVFile.SampleRate = 0x0000AC44;
-	WavHeader.WAVFile.ByteRate = 0x00015888;
-	WavHeader.WAVFile.BlockAlign = 0x0002;
-	WavHeader.WAVFile.BitsPerSample = 0x0010;
-
-	WavHeader.WAVFile.SubChunk2ID = 0x61746164;
-	WavHeader.WAVFile.SubChunk2Size = size;
-
-	/*
-	if(f_stat("sweep_corregido.wav", &fno) != FR_OK){
-		return 3;
-	}else{if(f_unlink("sweep_corregido.wav") != FR_OK)
-		return 3;
-	}
-	*/
-	result = f_unlink(nombre);
-
-	f_mount(&FatFs, "", 0);
-
-	if(f_open(&Fil, nombre, FA_WRITE | FA_OPEN_ALWAYS) != FR_OK)
-		return 3;
-
-	if(f_write(&Fil, &WavHeader.Header, 44, &bytes) != FR_OK)
-		return 3;
-
-	for(i = 0; i < sweep->muestras_utiles; i++){
-
-		sample = (short)(CONST_CONVER * sweep->samples[i].real);
-		if(f_write(&Fil, &sample, 2, &bytes) != FR_OK)
-			return 3;
-	}
-
-	f_close(&Fil);
-	return 0;
-}
-
-int Save_RI(Vector *left_ch, Vector *right_ch, int n_medicion){
-
+int save_respuesta_impulso (vector *left_ch, vector *right_ch, int n_medicion)
+{
 	/* Guarda la respuesta al impulso obtenida por el algoritmo en la tarjeta SD.
 	 *
 	 * Args:
@@ -157,52 +53,57 @@ int Save_RI(Vector *left_ch, Vector *right_ch, int n_medicion){
 	 * 		int indicando si hubo algun error durante el guardado. Si no hubo errores devuelve 0.
 	 * */
 
-	FATFS FatFs;
-	FIL Fil;
+	FATFS fat_fs;
+	FIL fil;
 	UINT bytes;
 	TCHAR nombre[50];
-	unsigned int i, size, cant_samples;
+	unsigned int i, size;
 
 	size = (left_ch->muestras_utiles + right_ch->muestras_utiles) * 2;
 
-	WavHeader.WAVFile.ChunkID = 0x46464952;
-	WavHeader.WAVFile.ChunkSize = 36 + size;
-	WavHeader.WAVFile.Format = 0x45564157;
+	wav_header.wav_file.chunk_id = 0x46464952;
+	wav_header.wav_file.chunk_size = 36 + size;
+	wav_header.wav_file.format = 0x45564157;
 
-	WavHeader.WAVFile.SubChunk1ID = 0x20746d66;
-	WavHeader.WAVFile.SubChunk1Size = 0x00000010;
-	WavHeader.WAVFile.AudioFormat = 0x0001;
-	WavHeader.WAVFile.NumChannels = 0x0002;
-	WavHeader.WAVFile.SampleRate = 0x0000AC44;
-	WavHeader.WAVFile.ByteRate = 0x0002B110;
-	WavHeader.WAVFile.BlockAlign = 0x0004;
-	WavHeader.WAVFile.BitsPerSample = 0x0010;
+	wav_header.wav_file.sub_chunk1_id = 0x20746d66;
+	wav_header.wav_file.sub_chunk1_size = 0x00000010;
+	wav_header.wav_file.audio_format = 0x0001;
+	wav_header.wav_file.num_channels = 0x0002;
+	wav_header.wav_file.sample_rate = 0x0000AC44;
+	wav_header.wav_file.byte_rate = 0x0002B110;
+	wav_header.wav_file.block_align = 0x0004;
+	wav_header.wav_file.bits_per_sample = 0x0010;
 
-	WavHeader.WAVFile.SubChunk2ID = 0x61746164;
-	WavHeader.WAVFile.SubChunk2Size = size;
+	wav_header.wav_file.sub_chunk2_id = 0x61746164;
+	wav_header.wav_file.sub_chunk2_size = size;
 
 	sprintf(nombre, "IR%d.wav", n_medicion);
 
-	f_mount(&FatFs, "", 0);
-	if(f_open(&Fil, nombre, FA_WRITE | FA_OPEN_ALWAYS) != FR_OK)
-		return 3;
+	f_mount(&fat_fs, "", 0);
 
-	if(f_write(&Fil, &WavHeader.Header, 44, &bytes) != FR_OK)
-		return 3;
-
-	if(left_ch->muestras_utiles > right_ch->muestras_utiles)
-		cant_samples = left_ch->muestras_utiles;
-	else
-		cant_samples = right_ch->muestras_utiles;
-
-	for(i = 0; i < cant_samples; i++){
-
-		Sample.channels.left = (short)(CONST_CONVER * left_ch->samples[i].real);
-		Sample.channels.right = (short)(CONST_CONVER * right_ch->samples[i].real);
-		if(f_write(&Fil, &Sample.data, 4, &bytes) != FR_OK)
-			return 3;
+	if (f_open(&fil, nombre, FA_WRITE | FA_OPEN_ALWAYS) != FR_OK)
+	{
+		return 1;
 	}
 
-	f_close(&Fil);
+	if (f_write(&fil, &wav_header.header, 44, &bytes) != FR_OK)
+	{
+		return 1;
+	}
+
+	for (i = 0; i < left_ch->muestras_utiles; i++)
+	{
+
+		sample.channels.left = (short)(CONST_CONVER * left_ch->samples[i].real);
+		sample.channels.right = (short)(CONST_CONVER * right_ch->samples[i].real);
+
+		if (f_write(&fil, &sample.data, 4, &bytes) != FR_OK)
+		{
+			return 1;
+
+		}
+	}
+
+	f_close(&fil);
 	return 0;
 }
