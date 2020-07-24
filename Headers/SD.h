@@ -8,10 +8,12 @@
 #ifndef SD_H_
 #define SD_H_
 
-#include "Resp_impulso.h"
+#include "impulse_response.h"
+
+#define CONST_CONVER	32767	// Constante de conversion entre float32 y int16
 
 /* --------- Funciones implementadas --------- */
 
-int save_respuesta_impulso (vector *left_ch, vector *right_ch, int n_medicion);
+int saveImpulseResponse (vector *left_ch, vector *right_ch, int n_medicion);
 
 #endif /* SD_H_ */

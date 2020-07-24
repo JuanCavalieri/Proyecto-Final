@@ -10,9 +10,9 @@
 
 /* --------- Funciones implementadas --------- */
 
-void check_error (int estado)
+void checkError (int state)
 {
-	if (estado == 1)
+	if (state == 1)
 	{
 		DSK6713_LED_on(0);
 		DSK6713_LED_on(1);
@@ -28,9 +28,9 @@ void check_error (int estado)
 	}
 }
 
-void leds_grabando (int estado)
+void recording (int state)
 {
-	if (estado == 1)
+	if (state == 1)
 	{
 		DSK6713_LED_on(0);
 		DSK6713_LED_on(1);
@@ -46,26 +46,26 @@ void leds_grabando (int estado)
 	}
 }
 
-void leds_modo (int modo)
+void ledsInMode (int mode)
 {
 	DSK6713_LED_off(0);
 	DSK6713_LED_off(1);
 	DSK6713_LED_off(2);
 	DSK6713_LED_off(3);
 
-	if (modo == 1)
+	if (mode)
 	{
 		DSK6713_LED_on(0);
 	}
-	if (modo == 2)
+	if (mode == 2)
 	{
 		DSK6713_LED_on(1);
 	}
-	if (modo == 3)
+	if (mode == 3)
 	{
 		DSK6713_LED_on(2);
 	}
-	if (modo == 4)
+	if (mode == 4)
 	{
 		DSK6713_LED_on(3);
 	}

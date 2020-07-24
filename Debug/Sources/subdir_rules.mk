@@ -66,10 +66,17 @@ Sources/ff.obj: ../Sources/ff.c $(GEN_OPTS) $(GEN_HDRS)
 	@echo 'Finished building: $<'
 	@echo ' '
 
-Sources/inicializaciones.obj: ../Sources/inicializaciones.c $(GEN_OPTS) $(GEN_HDRS)
+Sources/impulse_response.obj: ../Sources/impulse_response.c $(GEN_OPTS) $(GEN_HDRS)
 	@echo 'Building file: $<'
 	@echo 'Invoking: C6000 Compiler'
-	"C:/ti/ccsv5/tools/compiler/c6000_7.4.4/bin/cl6x" -mv6700 --abi=coffabi -O3 -ms3 -g --include_path="C:/C6xCSL/include" --include_path="E:/Facultad/Proyecto Final/Proyecto_DSK/Headers" --include_path="C:/DSK6713/c6000/dsk6713/include" --include_path="C:/ti/ccsv5/tools/compiler/c6000_7.4.4/include" --define=CHIP_6713 --display_error_number --diag_warning=225 --diag_wrap=off --mem_model:data=far --preproc_with_compile --preproc_dependency="Sources/inicializaciones.pp" --obj_directory="Sources" $(GEN_OPTS__FLAG) "$<"
+	"C:/ti/ccsv5/tools/compiler/c6000_7.4.4/bin/cl6x" -mv6700 --abi=coffabi -O3 -ms3 -g --include_path="C:/C6xCSL/include" --include_path="E:/Facultad/Proyecto Final/Proyecto_DSK/Headers" --include_path="C:/DSK6713/c6000/dsk6713/include" --include_path="C:/ti/ccsv5/tools/compiler/c6000_7.4.4/include" --define=CHIP_6713 --display_error_number --diag_warning=225 --diag_wrap=off --mem_model:data=far --preproc_with_compile --preproc_dependency="Sources/impulse_response.pp" --obj_directory="Sources" $(GEN_OPTS__FLAG) "$<"
+	@echo 'Finished building: $<'
+	@echo ' '
+
+Sources/initializations.obj: ../Sources/initializations.c $(GEN_OPTS) $(GEN_HDRS)
+	@echo 'Building file: $<'
+	@echo 'Invoking: C6000 Compiler'
+	"C:/ti/ccsv5/tools/compiler/c6000_7.4.4/bin/cl6x" -mv6700 --abi=coffabi -O3 -ms3 -g --include_path="C:/C6xCSL/include" --include_path="E:/Facultad/Proyecto Final/Proyecto_DSK/Headers" --include_path="C:/DSK6713/c6000/dsk6713/include" --include_path="C:/ti/ccsv5/tools/compiler/c6000_7.4.4/include" --define=CHIP_6713 --display_error_number --diag_warning=225 --diag_wrap=off --mem_model:data=far --preproc_with_compile --preproc_dependency="Sources/initializations.pp" --obj_directory="Sources" $(GEN_OPTS__FLAG) "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
@@ -77,13 +84,6 @@ Sources/main.obj: ../Sources/main.c $(GEN_OPTS) $(GEN_HDRS)
 	@echo 'Building file: $<'
 	@echo 'Invoking: C6000 Compiler'
 	"C:/ti/ccsv5/tools/compiler/c6000_7.4.4/bin/cl6x" -mv6700 --abi=coffabi -O3 -ms3 -g --include_path="C:/C6xCSL/include" --include_path="E:/Facultad/Proyecto Final/Proyecto_DSK/Headers" --include_path="C:/DSK6713/c6000/dsk6713/include" --include_path="C:/ti/ccsv5/tools/compiler/c6000_7.4.4/include" --define=CHIP_6713 --display_error_number --diag_warning=225 --diag_wrap=off --mem_model:data=far --preproc_with_compile --preproc_dependency="Sources/main.pp" --obj_directory="Sources" $(GEN_OPTS__FLAG) "$<"
-	@echo 'Finished building: $<'
-	@echo ' '
-
-Sources/resp_impulso.obj: ../Sources/resp_impulso.c $(GEN_OPTS) $(GEN_HDRS)
-	@echo 'Building file: $<'
-	@echo 'Invoking: C6000 Compiler'
-	"C:/ti/ccsv5/tools/compiler/c6000_7.4.4/bin/cl6x" -mv6700 --abi=coffabi -O3 -ms3 -g --include_path="C:/C6xCSL/include" --include_path="E:/Facultad/Proyecto Final/Proyecto_DSK/Headers" --include_path="C:/DSK6713/c6000/dsk6713/include" --include_path="C:/ti/ccsv5/tools/compiler/c6000_7.4.4/include" --define=CHIP_6713 --display_error_number --diag_warning=225 --diag_wrap=off --mem_model:data=far --preproc_with_compile --preproc_dependency="Sources/resp_impulso.pp" --obj_directory="Sources" $(GEN_OPTS__FLAG) "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

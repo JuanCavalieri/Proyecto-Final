@@ -42,7 +42,7 @@ union
 	} channels;
 }sample;
 
-int save_respuesta_impulso (vector *left_ch, vector *right_ch, int n_medicion)
+int saveImpulseResponse (vector *left_ch, vector *right_ch, int n_medicion)
 {
 	/* Guarda la respuesta al impulso obtenida por el algoritmo en la tarjeta SD.
 	 *

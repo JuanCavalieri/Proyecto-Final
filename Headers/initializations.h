@@ -13,13 +13,13 @@ extern TIMER_Handle Timer_Handler;
 
 extern unsigned int CodecEventId, TimerEventId, SPIEventId;
 
-void codec_open(void);
-void codec_close(void);
-void sd_open(void);
-void sd_close(void);
-void timer_init(void);
-void timer_interrup_init(void);
-void codec_interrupt_init(void);
+void codecOpen(void);
+void codecClose(void);
+void sdOpen(void);
+void sdClose(void);
+void timerInit(void);
+void timerInterrupInit(void);
+void codecInterruptInit(void);
 
 void DSK6713_LED_init(void);
 void DSK6713_DIP_init(void);

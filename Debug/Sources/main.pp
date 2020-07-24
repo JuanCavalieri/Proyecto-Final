@@ -18,11 +18,11 @@ Sources/main.obj: C:/C6xCSL/include/csl_mcbsp.h
 Sources/main.obj: C:/C6xCSL/include/csl_mcbsphal.h
 Sources/main.obj: C:/DSK6713/c6000/dsk6713/include/dsk6713_dip.h
 Sources/main.obj: C:/DSK6713/c6000/dsk6713/include/dsk6713_led.h
-Sources/main.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/inicializaciones.h
+Sources/main.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/initializations.h
 Sources/main.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/sd.h
-Sources/main.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/Resp_impulso.h
+Sources/main.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/impulse_response.h
 Sources/main.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/codec.h
-Sources/main.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/leds.h
+Sources/main.obj: E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/ledsController.h
 
 ../Sources/main.c: 
 C:/DSK6713/c6000/dsk6713/include/DSK6713_AIC23.h: 
@@ -42,8 +42,8 @@ C:/C6xCSL/include/csl_mcbsp.h:
 C:/C6xCSL/include/csl_mcbsphal.h: 
 C:/DSK6713/c6000/dsk6713/include/dsk6713_dip.h: 
 C:/DSK6713/c6000/dsk6713/include/dsk6713_led.h: 
-E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/inicializaciones.h: 
+E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/initializations.h: 
 E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/sd.h: 
-E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/Resp_impulso.h: 
+E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/impulse_response.h: 
 E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/codec.h: 
-E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/leds.h: 
+E:/Facultad/Proyecto\ Final/Proyecto_DSK/Headers/ledsController.h: 

@@ -16,8 +16,8 @@
 
 /* --------- Funciones implementadas --------- */
 
-void codec_out (short sample);
-unsigned int codec_in (void);
-void play_codec (unsigned char estado);
+void codecOut (short sample);
+unsigned int codecIn (void);
+void playCodec (unsigned char state);
 
 #endif /* CODEC_H_ */

@@ -16,7 +16,7 @@ union{	// Union para los datos del Codec
 	short channel[2];
 } codec_data;
 
-void codec_out (
+void codecOut (
 		short sample
 )
 {
@@ -32,7 +32,7 @@ void codec_out (
 	MCBSP_write(DSK6713_AIC23_DATAHANDLE, codec_data.sample);
 }
 
-unsigned int codec_in (void)
+unsigned int codecIn (void)
 {
 	/* Lee una muestra tomada por el codec.
 	 *
@@ -43,8 +43,8 @@ unsigned int codec_in (void)
 	return MCBSP_read(DSK6713_AIC23_DATAHANDLE);
 }
 
-void play_codec (
-		unsigned char estado
+void playCodec (
+		unsigned char state
 )
 {
 	/* Activa o desactiva las interrupciones que hacen que el codec comienze a transmitir datos.
@@ -53,11 +53,11 @@ void play_codec (
 	 * 		estado: Indica si el codec reproduce (1) o no (0).
 	 * */
 
-	if (estado == 1)
+	if (state == 1)
 	{
 		IRQ_enable(CodecEventId);
 		reproduciendo = 1;
-		codec_out(0);
+		codecOut(0);
 	}
 	else
 	{

@@ -10,9 +10,9 @@ ORDERED_OBJS += \
 $(GEN_CMDS__FLAG) \
 "./Sources/sdmm.obj" \
 "./Sources/sd.obj" \
-"./Sources/resp_impulso.obj" \
 "./Sources/main.obj" \
-"./Sources/inicializaciones.obj" \
+"./Sources/initializations.obj" \
+"./Sources/impulse_response.obj" \
 "./Sources/ff.obj" \
 "./Sources/dsk6713_led.obj" \
 "./Sources/dsk6713_dip.obj" \
@@ -140,8 +140,8 @@ Proyecto_DSK.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 # Other Targets
 clean:
 	-$(RM) $(C6000_EXECUTABLE_OUTPUTS__QUOTED) "Proyecto_DSK.out"
-	-$(RM) "Sources\codec.pp" "Sources\dsk6713.pp" "Sources\dsk6713_aic23_closecodec.pp" "Sources\dsk6713_aic23_opencodec.pp" "Sources\dsk6713_aic23_registers.pp" "Sources\dsk6713_aic23_setfreq.pp" "Sources\dsk6713_dip.pp" "Sources\dsk6713_led.pp" "Sources\ff.pp" "Sources\inicializaciones.pp" "Sources\main.pp" "Sources\resp_impulso.pp" "Sources\sd.pp" "Sources\sdmm.pp" 
-	-$(RM) "Vectors_intr.obj" "Sources\codec.obj" "Sources\dsk6713.obj" "Sources\dsk6713_aic23_closecodec.obj" "Sources\dsk6713_aic23_opencodec.obj" "Sources\dsk6713_aic23_registers.obj" "Sources\dsk6713_aic23_setfreq.obj" "Sources\dsk6713_dip.obj" "Sources\dsk6713_led.obj" "Sources\ff.obj" "Sources\inicializaciones.obj" "Sources\main.obj" "Sources\resp_impulso.obj" "Sources\sd.obj" "Sources\sdmm.obj" 
+	-$(RM) "Sources\codec.pp" "Sources\dsk6713.pp" "Sources\dsk6713_aic23_closecodec.pp" "Sources\dsk6713_aic23_opencodec.pp" "Sources\dsk6713_aic23_registers.pp" "Sources\dsk6713_aic23_setfreq.pp" "Sources\dsk6713_dip.pp" "Sources\dsk6713_led.pp" "Sources\ff.pp" "Sources\impulse_response.pp" "Sources\initializations.pp" "Sources\main.pp" "Sources\sd.pp" "Sources\sdmm.pp" 
+	-$(RM) "Vectors_intr.obj" "Sources\codec.obj" "Sources\dsk6713.obj" "Sources\dsk6713_aic23_closecodec.obj" "Sources\dsk6713_aic23_opencodec.obj" "Sources\dsk6713_aic23_registers.obj" "Sources\dsk6713_aic23_setfreq.obj" "Sources\dsk6713_dip.obj" "Sources\dsk6713_led.obj" "Sources\ff.obj" "Sources\impulse_response.obj" "Sources\initializations.obj" "Sources\main.obj" "Sources\sd.obj" "Sources\sdmm.obj" 
 	-$(RM) "Vectors_intr.pp" 
 	-@echo 'Finished clean'
 	-@echo ' '

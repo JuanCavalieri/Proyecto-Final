@@ -6,25 +6,25 @@
  */
 #include <stdarg.h>
 #include "math.h"
-#include "resp_impulso.h"
-#include "filtros.h"
+#include "impulse_response.h"
+#include "filters.h"
 
 #define FS 44100.0 				// Frecuencia de muestreo de las señales de audio [Hz]
-#define DURACION_SWEEP 5.0 		// Tiempo de duracion de la señal de exitacion [s]
+#define SWEEP_DURATION 5.0 		// Tiempo de duracion de la señal de exitacion [s]
 #define FSTART 10.0 			// Frecuencia inicial de la señal generada [Hz]
-#define FEND 24000.0 			// Frecuencia final de la señal generada [Hz]
-#define DURACION_FADEIN 0.379 	// Tiempo de duracion del fadein de la señal generada [s]
-#define DURACION_FADEOUT 0.2 	// Tiempo de duracion del fadeout de la señal generada [s]
+#define FEND 22000.0 			// Frecuencia final de la señal generada [Hz]
+#define FADEIN_DURATION 0.2 	// Tiempo de duracion del fadein de la señal generada [s]
+#define FADEOUT_DURATION 0.2 	// Tiempo de duracion del fadeout de la señal generada [s]
 #define PI	3.14159265358979
 
-#define MUESTRAS_SWEEP FS*DURACION_SWEEP	// Cantidad de muestras que tiene la señal generada
+#define SWEEP_SAMPLES FS*SWEEP_DURATION	// Cantidad de muestras que tiene la señal generada
 
 /* Se declaran en el main.c para evitar conflictos con
  * la sentencia #pragma DATA_SECTION(). Sino estas variables deberian
  * ser parte de la libreria creada para este proyecto
  *
 vector sweep, left_ch, right_ch;
-complex twiddles[MUESTRAS/2];
+complex twiddles[SIGNAL_LENGHT/2];
 */
 
 static void normalize (
@@ -40,9 +40,9 @@ static void normalize (
 	int i;
 	float norm;
 
-	norm = 1.0/(float)MUESTRAS;
+	norm = 1.0/(float)SIGNAL_LENGHT;
 
-	for (i = 0; i < MUESTRAS; i++)
+	for (i = 0; i < SIGNAL_LENGHT; i++)
 	{
 		signal->samples[i].real *= norm;
 		signal->samples[i].imag *= norm;
@@ -69,7 +69,7 @@ static inline void swap (
     signal->samples[rev].imag = temp;
 }
 
-static void bit_reversal (
+static void bitReversal (
 		vector *signal,
 		unsigned int lenght
 )
@@ -159,7 +159,7 @@ static void fft (
         }
 	}
 
-    bit_reversal(signal, lenght);
+    bitReversal(signal, lenght);
 }
 
 static void ifft (
@@ -207,11 +207,11 @@ static void ifft (
         }
     }
 
-    bit_reversal(signal, lenght);
+    bitReversal(signal, lenght);
     normalize(signal);
 }
 
-static void filtrar (
+static void filter (
 		vector *signal,
 		vector *filtro
 )
@@ -228,7 +228,7 @@ static void filtrar (
 	int i;
 	float temp;
 
-	for (i = 0; i < MUESTRAS; i++)
+	for (i = 0; i < SIGNAL_LENGHT; i++)
 	{
 		temp = filtro->samples[i].real;
 		filtro->samples[i].real = signal->samples[i].real*filtro->samples[i].real - signal->samples[i].imag*filtro->samples[i].imag;
@@ -236,7 +236,7 @@ static void filtrar (
 	}
 }
 
-static float valor_rms (
+static float rmsValue (
 		vector *signal,
 		int length
 )
@@ -262,7 +262,7 @@ static float valor_rms (
 	return (float)sqrt(temp/(float)length);
 }
 
-void vectores_reset (int cant, ... )
+void resetVectors (int cant, ... )
 {
 	/* Permite resetear los valores de todas las componentes de los vectores de señal que se pasan como argumentos.
 	 *
@@ -280,7 +280,7 @@ void vectores_reset (int cant, ... )
 	while (cant--)
 	{
 		vec = va_arg(pa, vector*);
-	    for (i = 0; i < MUESTRAS; i++)
+	    for (i = 0; i < SIGNAL_LENGHT; i++)
 	    {
 	    	vec->samples[i].real = 0.0;
 	        vec->samples[i].imag = 0.0;
@@ -290,7 +290,7 @@ void vectores_reset (int cant, ... )
 	va_end(pa);
 }
 
-void twiddle_init (
+void twiddleInit (
 		complex *twiddles
 )
 {
@@ -303,16 +303,16 @@ void twiddle_init (
 	int i;
 	double temp;
 
-	for (i = 0; i < MUESTRAS/2; i++)
+	for (i = 0; i < SIGNAL_LENGHT/2; i++)
 	{
-		temp = 2*PI*i/MUESTRAS;
+		temp = 2*PI*i/SIGNAL_LENGHT;
 		twiddles[i].real = (float)cos(temp);
 		twiddles[i].imag = (float)-sin(temp);
 
 	}
 }
 
-void generate_sweep (
+void generateSweep (
 		vector *signal
 )
 {
@@ -331,29 +331,29 @@ void generate_sweep (
 	double wend = 2*PI*FEND;
 	double t = 0;
 	double temp1 = log(wend/wstart);
-	double temp2 = wstart*DURACION_SWEEP/temp1;
-	double alpha_fadein = -log(0.001)/(FS*DURACION_FADEIN);
-	double alpha_fadeout = -log(0.001)/(FS*DURACION_FADEOUT);
+	double temp2 = wstart*SWEEP_DURATION/temp1;
+	double alpha_fadein = -log(0.001)/(FS*FADEIN_DURATION);
+	double alpha_fadeout = -log(0.001)/(FS*FADEOUT_DURATION);
 
-	for (i = 0; i < MUESTRAS_SWEEP; i++)
+	for (i = 0; i < SWEEP_SAMPLES; i++)
 	{
 		t = (double)i/FS;
-		signal->samples[i].real = (float)(0.1 * sin(temp2 * (exp(temp1*t/DURACION_SWEEP) - 1)));
+		signal->samples[i].real = (float)(0.1 * sin(temp2 * (exp(temp1*t/SWEEP_DURATION) - 1)));
 
-		if (i < (int)FS * DURACION_FADEIN)
+		if (i < (int)FS * FADEIN_DURATION)
 		{
 			signal->samples[i].real *= (float)(1 - exp(-alpha_fadein * i));
 		}
 
-		if (i > (MUESTRAS_SWEEP - (int)FS * DURACION_FADEOUT))
+		if (i > (SWEEP_SAMPLES - (int)FS * FADEOUT_DURATION))
 		{
-			signal->samples[i].real *= (float)(1 - exp(alpha_fadeout * (i - (MUESTRAS_SWEEP - 1))));
+			signal->samples[i].real *= (float)(1 - exp(alpha_fadeout * (i - (SWEEP_SAMPLES - 1))));
 		}
 	}
-	signal->muestras_utiles = MUESTRAS_SWEEP - 1;
+	signal->muestras_utiles = SWEEP_SAMPLES - 1;
 }
 
-void medir_rms_ambiente (
+void ambientNoise (
 		vector *left_ch,
 		vector *right_ch,
 		complex *twiddles,
@@ -371,31 +371,31 @@ void medir_rms_ambiente (
 
 	int i, j, cant_filtros, long_filtros;
 
-	fft(left_ch, twiddles, MUESTRAS);	// Hago la fft del ruido ambiente
+	fft(left_ch, twiddles, SIGNAL_LENGHT);	// Hago la fft del ruido ambiente
 
 	cant_filtros = sizeof(filtros) / sizeof(filtros[0]);
 	long_filtros = sizeof(filtros[0]) / sizeof(filtros[0][0]);
 
 	for (i = 0; i < cant_filtros; i++)
 	{
-		vectores_reset(1, right_ch);
+		resetVectors(1, right_ch);
 
 		for (j = 0; j < long_filtros; j++)
 		{
 			right_ch->samples[j].real = filtros[i][j];
 		}
 
-		fft(right_ch, twiddles, MUESTRAS);
-		filtrar(left_ch, right_ch);
-		ifft(right_ch, twiddles, MUESTRAS);
+		fft(right_ch, twiddles, SIGNAL_LENGHT);
+		filter(left_ch, right_ch);
+		ifft(right_ch, twiddles, SIGNAL_LENGHT);
 
-		rms_ambiente[i] = valor_rms(right_ch, MUESTRAS_SWEEP);
+		rms_ambiente[i] = rmsValue(right_ch, SWEEP_SAMPLES);
 
 	}
-	vectores_reset(2, left_ch, right_ch);
+	resetVectors(2, left_ch, right_ch);
 }
 
-void ajustar_sweep (
+void sweepCorrection (
 		vector *sweep,
 		vector *left_ch,
 		vector *right_ch,
@@ -421,22 +421,22 @@ void ajustar_sweep (
 	long_filtros = sizeof(filtros[0]) / sizeof(filtros[0][0]);
 
 	// Obtengo espectro de sweep grabado
-	fft(left_ch, twiddles, MUESTRAS);
+	fft(left_ch, twiddles, SIGNAL_LENGHT);
 
 	for (i = 0; i < cant_filtros; i++)
 	{
-		vectores_reset(1, right_ch);
+		resetVectors(1, right_ch);
 
 		for (j = 0; j < long_filtros; j++)
 		{
 			right_ch->samples[j].real = filtros[i][j];
 		}
 
-		fft(right_ch, twiddles, MUESTRAS);
-		filtrar(left_ch, right_ch);
-		ifft(right_ch, twiddles, MUESTRAS);
+		fft(right_ch, twiddles, SIGNAL_LENGHT);
+		filter(left_ch, right_ch);
+		ifft(right_ch, twiddles, SIGNAL_LENGHT);
 
-		rms_grabacion[i] = valor_rms(right_ch, MUESTRAS_SWEEP);
+		rms_grabacion[i] = rmsValue(right_ch, SWEEP_SAMPLES);
 
 		SNR = 20.0 * log10((double)rms_grabacion[i] / rms_ambiente[i]);
 
@@ -464,7 +464,7 @@ void ajustar_sweep (
 	}
 }
 
-void obtener_respuesta_impulso (
+void getImpulseResponse (
 		vector *sweep,
 		vector *left_ch,
 		vector *right_ch,
@@ -483,11 +483,11 @@ void obtener_respuesta_impulso (
 	int i;
 	float denominador, temp_left, temp_right;
 
-	fft(sweep, twiddles, MUESTRAS);
-	fft(left_ch, twiddles, MUESTRAS);
-	fft(right_ch, twiddles, MUESTRAS);
+	fft(sweep, twiddles, SIGNAL_LENGHT);
+	fft(left_ch, twiddles, SIGNAL_LENGHT);
+	fft(right_ch, twiddles, SIGNAL_LENGHT);
 
-	for (i = 0; i < MUESTRAS; i++)
+	for (i = 0; i < SIGNAL_LENGHT; i++)
 	{
 		denominador = sweep->samples[i].real * sweep->samples[i].real + sweep->samples[i].imag * sweep->samples[i].imag;
 		temp_left = left_ch->samples[i].real;
@@ -500,10 +500,10 @@ void obtener_respuesta_impulso (
 		right_ch->samples[i].imag = (right_ch->samples[i].imag * sweep->samples[i].real - temp_right * sweep->samples[i].imag) / denominador;
 	}
 
-	ifft(sweep, twiddles, MUESTRAS);
-	ifft(left_ch, twiddles, MUESTRAS);
-	ifft(right_ch, twiddles, MUESTRAS);
+	ifft(sweep, twiddles, SIGNAL_LENGHT);
+	ifft(left_ch, twiddles, SIGNAL_LENGHT);
+	ifft(right_ch, twiddles, SIGNAL_LENGHT);
 
-	left_ch->muestras_utiles = MUESTRAS - MUESTRAS_SWEEP;
-	right_ch->muestras_utiles = MUESTRAS - MUESTRAS_SWEEP;
+	left_ch->muestras_utiles = SIGNAL_LENGHT - SWEEP_SAMPLES;
+	right_ch->muestras_utiles = SIGNAL_LENGHT - SWEEP_SAMPLES;
 }

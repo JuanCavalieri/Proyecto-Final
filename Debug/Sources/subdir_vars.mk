@@ -13,9 +13,9 @@ C_SRCS += \
 ../Sources/dsk6713_dip.c \
 ../Sources/dsk6713_led.c \
 ../Sources/ff.c \
-../Sources/inicializaciones.c \
+../Sources/impulse_response.c \
+../Sources/initializations.c \
 ../Sources/main.c \
-../Sources/resp_impulso.c \
 ../Sources/sd.c \
 ../Sources/sdmm.c 
 
@@ -29,9 +29,9 @@ OBJS += \
 ./Sources/dsk6713_dip.obj \
 ./Sources/dsk6713_led.obj \
 ./Sources/ff.obj \
-./Sources/inicializaciones.obj \
+./Sources/impulse_response.obj \
+./Sources/initializations.obj \
 ./Sources/main.obj \
-./Sources/resp_impulso.obj \
 ./Sources/sd.obj \
 ./Sources/sdmm.obj 
 
@@ -45,9 +45,9 @@ C_DEPS += \
 ./Sources/dsk6713_dip.pp \
 ./Sources/dsk6713_led.pp \
 ./Sources/ff.pp \
-./Sources/inicializaciones.pp \
+./Sources/impulse_response.pp \
+./Sources/initializations.pp \
 ./Sources/main.pp \
-./Sources/resp_impulso.pp \
 ./Sources/sd.pp \
 ./Sources/sdmm.pp 
 
@@ -61,9 +61,9 @@ C_DEPS__QUOTED += \
 "Sources\dsk6713_dip.pp" \
 "Sources\dsk6713_led.pp" \
 "Sources\ff.pp" \
-"Sources\inicializaciones.pp" \
+"Sources\impulse_response.pp" \
+"Sources\initializations.pp" \
 "Sources\main.pp" \
-"Sources\resp_impulso.pp" \
 "Sources\sd.pp" \
 "Sources\sdmm.pp" 
 
@@ -77,9 +77,9 @@ OBJS__QUOTED += \
 "Sources\dsk6713_dip.obj" \
 "Sources\dsk6713_led.obj" \
 "Sources\ff.obj" \
-"Sources\inicializaciones.obj" \
+"Sources\impulse_response.obj" \
+"Sources\initializations.obj" \
 "Sources\main.obj" \
-"Sources\resp_impulso.obj" \
 "Sources\sd.obj" \
 "Sources\sdmm.obj" 
 
@@ -93,9 +93,9 @@ C_SRCS__QUOTED += \
 "../Sources/dsk6713_dip.c" \
 "../Sources/dsk6713_led.c" \
 "../Sources/ff.c" \
-"../Sources/inicializaciones.c" \
+"../Sources/impulse_response.c" \
+"../Sources/initializations.c" \
 "../Sources/main.c" \
-"../Sources/resp_impulso.c" \
 "../Sources/sd.c" \
 "../Sources/sdmm.c" 
 

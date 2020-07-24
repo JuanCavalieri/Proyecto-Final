@@ -1,10 +1,10 @@
 #include "DSK6713_AIC23.h"
 #include "dsk6713_dip.h"
 #include "dsk6713_led.h"
-#include "inicializaciones.h"
+#include "initializations.h"
 #include "sd.h"
 #include "codec.h"
-#include "leds.h"
+#include "ledsController.h"
 
 #define DELAY 44100*1
 
@@ -16,7 +16,7 @@
 #pragma DATA_SECTION(twiddles, ".EXT_RAM")
 
 vector sweep, left_ch, right_ch;
-complex twiddles[MUESTRAS/2];
+complex twiddles[SIGNAL_LENGHT/2];
 
 //-------------- Variables auxiliares ---------------
 
@@ -47,14 +47,14 @@ void main ()
 	DSK6713_init();
 	DSK6713_DIP_init();
 	DSK6713_LED_init();
-	timer_init();
+	timerInit();
 
-	twiddle_init(twiddles);
+	twiddleInit(twiddles);
 
 	//-------------- Genero el sweep -----------
 
-	vectores_reset(1, &sweep);
-	generate_sweep(&sweep);
+	resetVectors(1, &sweep);
+	generateSweep(&sweep);
 
 	//-------------- Bucle infinito ------------------------
 
@@ -67,24 +67,24 @@ void main ()
 
 		if (!DSK6713_DIP_get(0) && puls_levantados)
 		{
-			leds_grabando(ON);
+			recording(ON);
 			modo_actual = 1;
 			long_grabacion = sweep.muestras_utiles;
 
-			vectores_reset(2, &left_ch, &right_ch);
+			resetVectors(2, &left_ch, &right_ch);
 
-			codec_open();
+			codecOpen();
 
-			play_codec(ON);
+			playCodec(ON);
 			while (reproduciendo);
 
-			codec_close();
+			codecClose();
 
-			leds_grabando(OFF);
+			recording(OFF);
 
-			medir_rms_ambiente(&left_ch, &right_ch, twiddles, rms_ambiente);
+			ambientNoise(&left_ch, &right_ch, twiddles, rms_ambiente);
 
-			leds_modo(1);
+			ledsInMode(1);
 			puls_levantados = 0;
 			modo_anterior = 1;
 		}
@@ -96,29 +96,29 @@ void main ()
 
 		if (!DSK6713_DIP_get(1) && puls_levantados)
 		{
-			leds_grabando(ON);
+			recording(ON);
 			modo_actual = 2;
 			long_grabacion = sweep.muestras_utiles;
 
 			if (modo_anterior == 1 || modo_anterior == 3 || modo_anterior == 4)
 			{
-				generate_sweep(&sweep);
+				resetVectors(1, &sweep);
 			}
 
-			vectores_reset(2, &left_ch, &right_ch);
+			resetVectors(2, &left_ch, &right_ch);
 
-			codec_open();
+			codecOpen();
 
-			play_codec(ON);
+			playCodec(ON);
 			while (reproduciendo);
 
-			codec_close();
+			codecClose();
 
-			leds_grabando(OFF);
+			recording(OFF);
 
-			ajustar_sweep(&sweep, &left_ch, &right_ch, twiddles, rms_ambiente, &correc_db);
+			sweepCorrection(&sweep, &left_ch, &right_ch, twiddles, rms_ambiente, &correc_db);
 
-			leds_modo(2);
+			ledsInMode(2);
 			puls_levantados = 0;
 			modo_anterior = 2;
 		}
@@ -130,29 +130,29 @@ void main ()
 
 		if (!DSK6713_DIP_get(2) && puls_levantados)
 		{
-			leds_grabando(ON);
+			recording(ON);
 			modo_actual = 3;
-			long_grabacion = MUESTRAS;
+			long_grabacion = SIGNAL_LENGHT;
 
 			if (modo_anterior == 1 || modo_anterior == 4)
 			{
-				generate_sweep(&sweep);
+				generateSweep(&sweep);
 			}
 
-			vectores_reset(2, &left_ch, &right_ch);
+			resetVectors(2, &left_ch, &right_ch);
 
-			codec_open();
+			codecOpen();
 
-			play_codec(ON);
+			playCodec(ON);
 			while (reproduciendo);
 
-			codec_close();
+			codecClose();
 
-			leds_grabando(OFF);
+			recording(OFF);
 
-			obtener_respuesta_impulso(&sweep, &left_ch, &right_ch, twiddles); //Falta guardar la cantidad de muestras utiles en los vetores de salida
+			getImpulseResponse(&sweep, &left_ch, &right_ch, twiddles); //Falta guardar la cantidad de muestras utiles en los vetores de salida
 
-			leds_modo(3);
+			ledsInMode(3);
 			puls_levantados = 0;
 			modo_anterior = 3;
 		}
@@ -165,18 +165,18 @@ void main ()
 		if (!DSK6713_DIP_get(3) && puls_levantados)
 		{
 			modo_actual = 4;
-			sd_open();
+			sdOpen();
 
 			if (modo_anterior == 3)
 			{
-				estado = save_respuesta_impulso(&left_ch, &right_ch, num_medicion); //Terminar de definir la longitud de la RI a guardar
-				check_error(estado);
+				estado = saveImpulseResponse(&left_ch, &right_ch, num_medicion); //Terminar de definir la longitud de la RI a guardar
+				checkError(estado);
 				num_medicion++;
 			}
 
-			sd_close();
+			sdClose();
 
-			leds_modo(4);
+			ledsInMode(4);
 			puls_levantados = 0;
 			modo_anterior = 4;
 		}
@@ -197,22 +197,22 @@ interrupt void c_int11 ()
 	{
 		if (i < DELAY)
 		{
-			codec_out(0);
-			codec_data.sample = codec_in();
+			codecOut(0);
+			codec_data.sample = codecIn();
 			i++;
 		}
 		else
 		{
 			if (modo_actual == 1)
 			{
-				codec_out(0);
+				codecOut(0);
 			}
 			else
 			{
-				codec_out((short)(sweep.samples[j].real * CONST_CONVER));
+				codecOut((short)(sweep.samples[j].real * CONST_CONVER));
 			}
 
-			codec_data.sample = codec_in();
+			codec_data.sample = codecIn();
 			left_ch.samples[j].real = ((float)codec_data.channel[LEFT])/CONST_CONVER;
 			right_ch.samples[j].real = ((float)codec_data.channel[RIGHT])/CONST_CONVER;
 
@@ -225,7 +225,7 @@ interrupt void c_int11 ()
 		right_ch.muestras_utiles = j;
 		j = 0;
 		i = 0;
-		play_codec(OFF);
+		playCodec(OFF);
 	}
 }
 
