@@ -1,5 +1,5 @@
 /*
- * Resp_impulso.h
+ * impulse_response.h
  *
  *  Created on: 04/01/2019
  *      Author: Juani
@@ -8,14 +8,14 @@
 #ifndef RESP_IMPULSO_H_
 #define RESP_IMPULSO_H_
 
-#define SIGNAL_LENGHT	524288 		// Longitud de los vectores de las señales
+#define SIGNAL_LENGHT	524288 		// Longitud de los vectores de las seï¿½ales
 
 typedef struct{		// Estructura que define un numero complejo
 	float real;
 	float imag;
 } complex;
 
-typedef struct{		// Estructura que define un vector de señal
+typedef struct{		// Estructura que define un vector de seï¿½al
 	complex samples[SIGNAL_LENGHT];
 	int muestras_utiles;
 } vector;

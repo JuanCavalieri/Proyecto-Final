@@ -1,5 +1,5 @@
 /*
- * Runtime_errors.h
+ * ledsController.h
  *
  *  Created on: 25/05/2019
  *      Author: Juani
@@ -53,7 +53,7 @@ void ledsInMode (int mode)
 	DSK6713_LED_off(2);
 	DSK6713_LED_off(3);
 
-	if (mode)
+	if (mode == 1)
 	{
 		DSK6713_LED_on(0);
 	}

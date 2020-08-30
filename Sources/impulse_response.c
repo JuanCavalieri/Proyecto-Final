@@ -1,5 +1,5 @@
 /*
- * Resp_impulso.c
+ * impulse_response.c
  *
  *  Created on: 04/01/2019
  *      Author: Juani
@@ -9,15 +9,15 @@
 #include "impulse_response.h"
 #include "filters.h"
 
-#define FS 44100.0 				// Frecuencia de muestreo de las señales de audio [Hz]
-#define SWEEP_DURATION 5.0 		// Tiempo de duracion de la señal de exitacion [s]
-#define FSTART 10.0 			// Frecuencia inicial de la señal generada [Hz]
-#define FEND 22000.0 			// Frecuencia final de la señal generada [Hz]
-#define FADEIN_DURATION 0.2 	// Tiempo de duracion del fadein de la señal generada [s]
-#define FADEOUT_DURATION 0.2 	// Tiempo de duracion del fadeout de la señal generada [s]
+#define FS 44100.0 				// Frecuencia de muestreo de las seï¿½ales de audio [Hz]
+#define SWEEP_DURATION 5.0 		// Tiempo de duracion de la seï¿½al de exitacion [s]
+#define FSTART 10.0 			// Frecuencia inicial de la seï¿½al generada [Hz]
+#define FEND 22000.0 			// Frecuencia final de la seï¿½al generada [Hz]
+#define FADEIN_DURATION 0.2 	// Tiempo de duracion del fadein de la seï¿½al generada [s]
+#define FADEOUT_DURATION 0.2 	// Tiempo de duracion del fadeout de la seï¿½al generada [s]
 #define PI	3.14159265358979
 
-#define SWEEP_SAMPLES FS*SWEEP_DURATION	// Cantidad de muestras que tiene la señal generada
+#define SWEEP_SAMPLES FS*SWEEP_DURATION	// Cantidad de muestras que tiene la seï¿½al generada
 
 /* Se declaran en el main.c para evitar conflictos con
  * la sentencia #pragma DATA_SECTION(). Sino estas variables deberian
@@ -34,7 +34,7 @@ static void normalize (
 	/* Aplica la normalizacion 1/N a los valores devueltos por la funcion de ifft.
 	 *
 	 * Args:
-	 * 		*signal: Puntero al vector señal al que se le aplicara la normalizacion
+	 * 		*signal: Puntero al vector seï¿½al al que se le aplicara la normalizacion
 	 * */
 
 	int i;
@@ -77,7 +77,7 @@ static void bitReversal (
 	/* Algoritmo de bit reversal requerido en las funciones de fft y ifft.
 	 *
 	 * Args:
-	 * 		*signal: Puntero al vector señal al que se le aplicara la reversion.
+	 * 		*signal: Puntero al vector seï¿½al al que se le aplicara la reversion.
 	 * 		length: Longitud del vector al que se le aplicara la reversion.
 	 * */
 
@@ -119,13 +119,13 @@ static void fft (
 		int lenght
 )
 {
-	/* Realiza la fft (Fast Fourier Transform) de longitud length sobre la señal en signal en dominio tiempo.
+	/* Realiza la fft (Fast Fourier Transform) de longitud length sobre la seï¿½al en signal en dominio tiempo.
 	 * Almacena el resultado, en dominio frecuencial, en el mismo vector signal. La funcion presupone que el
-	 * vector signal tiene longitud length y que si la señal util es mas corta que el propio vector signal,
+	 * vector signal tiene longitud length y que si la seï¿½al util es mas corta que el propio vector signal,
 	 * el resto del mismo vale 0.
 	 *
 	 * Args:
-	 * 		*signal: Puntero al vector con la señal a transformar.
+	 * 		*signal: Puntero al vector con la seï¿½al a transformar.
 	 * 		*twiddles: Puntero al vector con las constantes twiddle.
 	 * 		length: Longitud de la transformada.
 	 * */
@@ -168,12 +168,12 @@ static void ifft (
 		int lenght
 )
 {
-	/* Realiza la ifft (Inverse Fast Fourier Transform) de longitud length sobre la señal en signal en dominio frecuencial.
+	/* Realiza la ifft (Inverse Fast Fourier Transform) de longitud length sobre la seï¿½al en signal en dominio frecuencial.
 	 * Almacena el resultado, en dominio tiempo, en el mismo vector signal. La funcion presupone que el
 	 * vector signal tiene longitud length.
 	 *
 	 * Args:
-	 * 		*signal: Puntero al vector con la señal a antitransformar.
+	 * 		*signal: Puntero al vector con la seï¿½al a antitransformar.
 	 * 		*twiddles: Puntero al vector con las constantes twiddle.
 	 * 		length: Longitud de la transformada.
 	 * */
@@ -216,12 +216,12 @@ static void filter (
 		vector *filtro
 )
 {
-	/* Realiza el filtrado entre la señal en signal y el filtro. El mismo se realiza en
+	/* Realiza el filtrado entre la seï¿½al en signal y el filtro. El mismo se realiza en
 	 * dominio frecuencial, por lo que ambos vectores deben contener los espectros de las
-	 * señales correspondientes.
+	 * seï¿½ales correspondientes.
 	 *
 	 * Args:
-	 * 		*signal: Puntero al vector con la señal a filtrar.
+	 * 		*signal: Puntero al vector con la seï¿½al a filtrar.
 	 * 		*filtro: Puntero al vector con el filtro a aplicar.
 	 * */
 
@@ -241,14 +241,14 @@ static float rmsValue (
 		int length
 )
 {
-	/* Calcula el valor rms de la señal en el vector signal. El valor length indica hasta
-	 * que componente del vector se toma la señal para calcular su valor rms.
+	/* Calcula el valor rms de la seï¿½al en el vector signal. El valor length indica hasta
+	 * que componente del vector se toma la seï¿½al para calcular su valor rms.
 	 *
 	 * Args:
-	 * 		*signal: Puntero al vector con la señal a la cual calcular el valor rms.
-	 * 		length: Longitud que abarca la señal util en el vector signal.
+	 * 		*signal: Puntero al vector con la seï¿½al a la cual calcular el valor rms.
+	 * 		length: Longitud que abarca la seï¿½al util en el vector signal.
 	 * 	Return:
-	 * 		float con el valor rms de la señal de entrada.
+	 * 		float con el valor rms de la seï¿½al de entrada.
 	 * */
 
 	int i;
@@ -262,9 +262,47 @@ static float rmsValue (
 	return (float)sqrt(temp/(float)length);
 }
 
+static void normalizeIR (
+		vector *left_ch,
+		vector *right_ch
+)
+{
+	/* Normaliza la respuesta al impulso obtenida. La normalizacion se hace
+	 * teniendo en cuenta ambos canales a la vez.
+	 * 
+	 * Args:
+	 * 		*left_ch, *right_ch: Punteros a los vectores de las seÃ±ales grabadas.
+	 * */
+
+	int i;
+	float max_value = 0.0;
+	float correction;
+
+	for (i = 0; i < left_ch->muestras_utiles; i++)
+	{
+		if (left_ch->samples[i].real > max_value)
+		{
+			max_value = left_ch->samples[i].real;
+		}
+
+		if (right_ch->samples[i].real > max_value)
+		{
+			max_value = right_ch->samples[i].real;
+		}
+	}
+
+	correction = 1.0/max_value;
+
+	for (i = 0; i < left_ch->muestras_utiles; i++)
+	{
+		left_ch->samples[i].real = left_ch->samples[i].real * correction;
+		right_ch->samples[i].real = right_ch->samples[i].real * correction;
+	}
+}
+
 void resetVectors (int cant, ... )
 {
-	/* Permite resetear los valores de todas las componentes de los vectores de señal que se pasan como argumentos.
+	/* Permite resetear los valores de todas las componentes de los vectores de seï¿½al que se pasan como argumentos.
 	 *
 	 * Args:
 	 * 		cant: Cantidad de vectores que se desean resetear
@@ -316,14 +354,14 @@ void generateSweep (
 		vector *signal
 )
 {
-	/* Genera una señal senoidal de frecuencia variable que comienza en FSTART y termina en FEND,
+	/* Genera una seï¿½al senoidal de frecuencia variable que comienza en FSTART y termina en FEND,
 	 * con una duracion igual a DURACION_SWEEP que se almacena en el vector signal segun la formula
 	 * presente en [], referenciado en la bibliografia del informe del presente trabajo. Ademas, se
 	 * le aplica a la misma un efecto de fade in de duracion DURACION_FADEIN y otro de fade out de
 	 * duracion DURACION_FADEOUT.
 	 *
 	 * Args:
-	 * 		*signal: Puntero al vector donde almacenar la señal generada.
+	 * 		*signal: Puntero al vector donde almacenar la seï¿½al generada.
 	 * */
 
 	int i;
@@ -359,11 +397,11 @@ void ambientNoise (
 		complex *twiddles,
 		float *rms_ambiente)
 {
-	/* Mide el ruido ambiente de la señal estereo grabada por el sistema. Realiza un filtrado con los filtros
-	 * del archivo filtros.h y obtiene la banda de frecuencia en la cual el valor rms de la señal es mayor.
+	/* Mide el ruido ambiente de la seï¿½al estereo grabada por el sistema. Realiza un filtrado con los filtros
+	 * del archivo filtros.h y obtiene la banda de frecuencia en la cual el valor rms de la seï¿½al es mayor.
 	 *
 	 * Args:
-	 * 		*left_ch, *right_ch: Punteros a los vectores con las señales grabadas
+	 * 		*left_ch, *right_ch: Punteros a los vectores con las seï¿½ales grabadas
 	 * 		*twiddles: Puntero al vector con las constantes twiddles
 	 * 		*max_rms: Puntero a la variable para almacenar el maximo valor rms obtenido
 	 * 		*num_filtro: Puntero a la variable para almacenar el numero de filtro con el cual se obtuvo el maximo rms
@@ -403,11 +441,11 @@ void sweepCorrection (
 		float *rms_ambiente,
 		float *correc_db)
 {
-	/* Obtiene el valor rms de la señal de exitacion grabada y verifica que la relacion señal ruido sea mayor o igual a 60dB.
-	 * En caso de que sea menor, modifica el nivel de la señal de exitacion para lograr dicha SNR.
+	/* Obtiene el valor rms de la seï¿½al de exitacion grabada y verifica que la relacion seï¿½al ruido sea mayor o igual a 60dB.
+	 * En caso de que sea menor, modifica el nivel de la seï¿½al de exitacion para lograr dicha SNR.
 	 *
 	 * Args:
-	 * 		*sweep: Puntero al vector de señal de exitacion
+	 * 		*sweep: Puntero al vector de seï¿½al de exitacion
 	 * 		*twiddles: Puntero al vector con las constantes twiddles
 	 * 		max_rms: Valor de maximo rms de ruido ambiente obtenido previamente
 	 * 		num_filtro: Numero de filtro con el que se obtuvo el maximo rms de ruido ambiente
@@ -475,8 +513,8 @@ void getImpulseResponse (
 	 * en los vectores left_ch y right_ch de forma estereo.
 	 *
 	 * Args:
-	 * 		*sweep: Puntero al vector con la señal de exitacion utilizada.
-	 * 		*left_ch y *right_ch: Punteros a los vectores que contienen las señales grabadas en la medicion por la toma estereo.
+	 * 		*sweep: Puntero al vector con la seï¿½al de exitacion utilizada.
+	 * 		*left_ch y *right_ch: Punteros a los vectores que contienen las seï¿½ales grabadas en la medicion por la toma estereo.
 	 * 		*twiddles: Puntero al vector con las constantes twiddle.
 	 * */
 
@@ -506,4 +544,6 @@ void getImpulseResponse (
 
 	left_ch->muestras_utiles = SIGNAL_LENGHT - SWEEP_SAMPLES;
 	right_ch->muestras_utiles = SIGNAL_LENGHT - SWEEP_SAMPLES;
+
+	normalizeIR(left_ch, right_ch);
 }
